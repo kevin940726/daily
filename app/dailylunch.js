@@ -1,19 +1,12 @@
-const Koa = require('koa');
-const bodyParser = require('koa-bodyparser');
+const Router = require('koa-router');
+const logger = require('./logger');
+const { COUNT_EMOJI, MAIN_COLOR } = require('./constants');
 
-const app = new Koa();
+const router = new Router();
 
-const COUNT_EMOJI = ':heavy_plus_sign:';
-
-app.use(bodyParser());
-
-app.use(async (ctx, next) => {
-  if (ctx.path !== '/create') {
-    return await next();
-  }
-
-  console.log(ctx.request.body);
-
+router.post('/create', async (ctx) => {
+  logger.log(ctx.request.body);
+  
   const { text } = ctx.request.body;
 
   const lunches = text.split('\r\n')
@@ -26,6 +19,7 @@ app.use(async (ctx, next) => {
       .map((lunch, index) => ({
         title: lunch,
         callback_id: `lunch-${index}`,
+        color: MAIN_COLOR,
         actions: [{
           name: `lunch-${index}`,
           text: COUNT_EMOJI,
@@ -36,14 +30,10 @@ app.use(async (ctx, next) => {
   };
 });
 
-app.use(async (ctx, next) => {
-  if (ctx.path !== '/button') {
-    return await next();
-  }
-
+router.post('/button', async (ctx) => {
   const body = JSON.parse(ctx.request.body.payload);
-
-  console.log(body);
+  
+  logger.log(body);
 
   const { callback_id, user, original_message } = body;
 
@@ -82,4 +72,4 @@ app.use(async (ctx, next) => {
   };
 });
 
-app.listen(5000);
+module.exports = router;

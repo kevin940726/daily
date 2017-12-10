@@ -1,7 +1,8 @@
 const { URLSearchParams } = require('url');
 const fetch = require('node-fetch');
+const { PORT, COUNT_EMOJI, MAIN_COLOR } = require('../constants');
 
-const HOST = 'http://localhost:5000';
+const HOST = `http://localhost:${PORT}`;
 
 const buildSearchParams = (json) => {
   const params = new URLSearchParams();
@@ -21,9 +22,10 @@ describe('/dailylunch', () => {
       {
         title: 'lunch1',
         callback_id: 'lunch-0',
+        color: MAIN_COLOR,
         actions: [{
           name: 'lunch-0',
-          text: ':heavy_plus_sign:',
+          text: COUNT_EMOJI,
           type: 'button',
           value: 'lunch1',
         }],
@@ -31,9 +33,10 @@ describe('/dailylunch', () => {
       {
         title: 'lunch2',
         callback_id: 'lunch-1',
+        color: MAIN_COLOR,
         actions: [{
           name: 'lunch-1',
-          text: ':heavy_plus_sign:',
+          text: COUNT_EMOJI,
           type: 'button',
           value: 'lunch2',
         }],
@@ -94,7 +97,7 @@ describe('/dailylunch', () => {
     const response = await mockRequest.then(res => res.json());
 
     expect(response.attachments[1].text).toBe('@kaihao');
-    expect(response.attachments[1].actions[0].text).toBe(':heavy_plus_sign: 1');
+    expect(response.attachments[1].actions[0].text).toBe(`${COUNT_EMOJI} 1`);
   });
 
   it('should handle message button clicked with same user', async () => {
@@ -125,7 +128,7 @@ describe('/dailylunch', () => {
     const response = await mockRequest.then(res => res.json());
 
     expect(response.attachments[1].text).toBe('');
-    expect(response.attachments[1].actions[0].text).toBe(':heavy_plus_sign:');
+    expect(response.attachments[1].actions[0].text).toBe(COUNT_EMOJI);
   });
 
   it('should handle message button clicked with new user', async () => {
@@ -156,6 +159,6 @@ describe('/dailylunch', () => {
     const response = await mockRequest.then(res => res.json());
 
     expect(response.attachments[1].text).toBe('@jack, @kaihao');
-    expect(response.attachments[1].actions[0].text).toBe(':heavy_plus_sign: 2');
+    expect(response.attachments[1].actions[0].text).toBe(`${COUNT_EMOJI} 2`);
   });
 });

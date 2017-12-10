@@ -2,17 +2,18 @@
   "name": "dailylunch",
   "version": "1.0.0",
   "description": "dailylunch for 17media",
-  "main": "index.js",
+  "main": "app/index.js",
   "repository": "https://github.com/kevin940726/dailylunch",
   "author": "Kai Hao",
   "license": "MIT",
   "dependencies": {
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.3.0",
     "node-fetch": "^1.7.3"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "node app/index.js",
     "test": "jest",
     "deploy": "now --public -e NODE_ENV=\"production\""
   },
