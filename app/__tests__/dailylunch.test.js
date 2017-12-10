@@ -11,7 +11,7 @@ const buildSearchParams = (json) => {
     .forEach((key) => {
       params.append(key, json[key]);
     });
-  
+
   return params;
 };
 
@@ -101,8 +101,8 @@ describe('/dailylunch', () => {
   });
 
   it('should handle message button clicked with same user', async () => {
-    const original_message = {...mockResponse};
-    original_message.attachments[1].text = '@kaihao';
+    const originalMessage = { ...mockResponse };
+    originalMessage.attachments[1].text = '@kaihao';
 
     const mockRequest = fetch(`${HOST}/button`, {
       method: 'POST',
@@ -120,7 +120,7 @@ describe('/dailylunch', () => {
           user: {
             name: 'kaihao',
           },
-          original_message,
+          original_message: originalMessage,
         }),
       }),
     });
@@ -132,8 +132,8 @@ describe('/dailylunch', () => {
   });
 
   it('should handle message button clicked with new user', async () => {
-    const original_message = {...mockResponse};
-    original_message.attachments[1].text = '@jack';
+    const originalMessage = { ...mockResponse };
+    originalMessage.attachments[1].text = '@jack';
 
     const mockRequest = fetch(`${HOST}/button`, {
       method: 'POST',
@@ -151,7 +151,7 @@ describe('/dailylunch', () => {
           user: {
             name: 'kaihao',
           },
-          original_message,
+          original_message: originalMessage,
         }),
       }),
     });

@@ -6,7 +6,7 @@ const router = new Router();
 
 router.post('/create', async (ctx) => {
   logger.log(ctx.request.body);
-  
+
   const { text } = ctx.request.body;
 
   const lunches = text.split('\r\n')
@@ -32,16 +32,16 @@ router.post('/create', async (ctx) => {
 
 router.post('/button', async (ctx) => {
   const body = JSON.parse(ctx.request.body.payload);
-  
+
   logger.log(body);
 
-  const { callback_id, user, original_message } = body;
+  const { callback_id: callbackID, user, original_message: originalMessage } = body;
 
   ctx.body = {
-    ...original_message,
-    attachments: original_message.attachments
+    ...originalMessage,
+    attachments: originalMessage.attachments
       .map((lunch, index) => {
-        if (`lunch-${index}` !== callback_id) {
+        if (`lunch-${index}` !== callbackID) {
           return lunch;
         }
 
@@ -49,7 +49,7 @@ router.post('/button', async (ctx) => {
 
         const users = new Set((lunch.text || '')
           .split(', ')
-          .map(user => user.trim())
+          .map(u => u.trim())
           .filter(Boolean)
         );
 
@@ -58,7 +58,7 @@ router.post('/button', async (ctx) => {
         } else {
           users.add(currentUser);
         }
-        
+
         return {
           ...lunch,
           text: Array.from(users)

@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "node app/index.js",
+    "lint": "eslint app",
     "test": "jest",
     "deploy": "now --public -e NODE_ENV=\"production\""
   },
@@ -21,6 +22,11 @@
     "node": "8.x.x"
   },
   "devDependencies": {
+    "@17media/eslint-config-17media": "^1.2.0",
+    "babel-eslint": "^7.2.1",
+    "eslint": "^3.19.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-react": "^6.10.3",
     "jest-cli": "^21.2.1"
   }
 }
