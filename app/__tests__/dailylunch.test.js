@@ -87,6 +87,7 @@ describe('/dailylunch', () => {
           }],
           callback_id: 'lunch-1',
           user: {
+            id: 'kaihao',
             name: 'kaihao',
           },
           original_message: mockResponse,
@@ -96,13 +97,13 @@ describe('/dailylunch', () => {
 
     const response = await mockRequest.then(res => res.json());
 
-    expect(response.attachments[1].text).toBe('@kaihao');
+    expect(response.attachments[1].text).toBe('<@kaihao>');
     expect(response.attachments[1].actions[0].text).toBe(`${COUNT_EMOJI} 1`);
   });
 
   it('should handle message button clicked with same user', async () => {
     const originalMessage = { ...mockResponse };
-    originalMessage.attachments[1].text = '@kaihao';
+    originalMessage.attachments[1].text = '<@kaihao>';
 
     const mockRequest = fetch(`${HOST}/button`, {
       method: 'POST',
@@ -118,6 +119,7 @@ describe('/dailylunch', () => {
           }],
           callback_id: 'lunch-1',
           user: {
+            id: 'kaihao',
             name: 'kaihao',
           },
           original_message: originalMessage,
@@ -133,7 +135,7 @@ describe('/dailylunch', () => {
 
   it('should handle message button clicked with new user', async () => {
     const originalMessage = { ...mockResponse };
-    originalMessage.attachments[1].text = '@jack';
+    originalMessage.attachments[1].text = '<@jack>';
 
     const mockRequest = fetch(`${HOST}/button`, {
       method: 'POST',
@@ -149,6 +151,7 @@ describe('/dailylunch', () => {
           }],
           callback_id: 'lunch-1',
           user: {
+            id: 'kaihao',
             name: 'kaihao',
           },
           original_message: originalMessage,
@@ -158,7 +161,7 @@ describe('/dailylunch', () => {
 
     const response = await mockRequest.then(res => res.json());
 
-    expect(response.attachments[1].text).toBe('@jack, @kaihao');
+    expect(response.attachments[1].text).toBe('<@jack>, <@kaihao>');
     expect(response.attachments[1].actions[0].text).toBe(`${COUNT_EMOJI} 2`);
   });
 });

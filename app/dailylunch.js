@@ -45,7 +45,7 @@ router.post('/button', async (ctx) => {
           return lunch;
         }
 
-        const currentUser = `@${user.name}`;
+        const currentUser = `<@${user.id}>`;
 
         const users = new Set((lunch.text || '')
           .split(', ')
