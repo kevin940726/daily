@@ -1,6 +1,8 @@
 const Router = require('koa-router');
 const logger = require('./logger');
 const { COUNT_EMOJI, MAIN_COLOR } = require('./constants');
+const store = require('./store');
+const { mapLunchTextToSet, mapSetToLunchText } = require('./utils');
 
 const router = new Router();
 
@@ -35,37 +37,35 @@ router.post('/button', async (ctx) => {
 
   logger.log(body);
 
-  const { callback_id: callbackID, user, original_message: originalMessage } = body;
+  const { callback_id: callbackID, user, message_ts: ts, original_message: originalMessage } = body;
+
+  const lunches = originalMessage.attachments
+    .reduce((map, lunch) => (
+      map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
+    ), new Map());
+
+  store.set(ts, lunches);
+
+  const currentUser = `<@${user.id}>`;
+
+  if (store.has(ts, callbackID, currentUser)) {
+    store.delete(ts, callbackID, currentUser);
+  } else {
+    store.add(ts, callbackID, currentUser);
+  }
 
   ctx.body = {
     ...originalMessage,
     attachments: originalMessage.attachments
-      .map((lunch, index) => {
-        if (`lunch-${index}` !== callbackID) {
-          return lunch;
-        }
-
-        const currentUser = `<@${user.id}>`;
-
-        const users = new Set((lunch.text || '')
-          .split(', ')
-          .map(u => u.trim())
-          .filter(Boolean)
-        );
-
-        if (users.has(currentUser)) {
-          users.delete(currentUser);
-        } else {
-          users.add(currentUser);
-        }
+      .map((lunch) => {
+        const set = store.get(ts, lunch.callback_id);
 
         return {
           ...lunch,
-          text: Array.from(users)
-            .join(', '),
+          text: mapSetToLunchText(set),
           actions: [{
             ...lunch.actions[0],
-            text: `${COUNT_EMOJI}${users.size ? ` ${users.size}` : ''}`,
+            text: `${COUNT_EMOJI}${set.size ? ` ${set.size}` : ''}`,
           }],
         };
       }),
