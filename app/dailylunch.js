@@ -1,15 +1,27 @@
 const Router = require('koa-router');
 const logger = require('./logger');
-const { COUNT_EMOJI, MAIN_COLOR } = require('./constants');
 const store = require('./store');
 const { mapLunchTextToSet, mapSetToLunchText } = require('./utils');
+const {
+  COUNT_EMOJI,
+  MAIN_COLOR,
+  CLOSE_ACTION,
+  CLOSE_TEXT,
+  REOPEN_TEXT,
+  CLOSE_USER_WHITE_LIST,
+} = require('./constants');
 
 const router = new Router();
 
 router.post('/create', async (ctx) => {
-  logger.log(ctx.request.body);
+  const { user_name: userName, user_id: userID, channel_name: channelName, text } = ctx.request.body;
 
-  const { text } = ctx.request.body;
+  logger.log({
+    userID,
+    userName,
+    channelName,
+    text,
+  });
 
   const lunches = text.split('\r\n')
     .map(lunch => lunch.trim())
@@ -28,18 +40,62 @@ router.post('/create', async (ctx) => {
           type: 'button',
           value: lunch,
         }],
-      })),
+      }))
+      .concat({
+        callback_id: CLOSE_ACTION,
+        color: 'warning',
+        actions: [{
+          name: CLOSE_ACTION,
+          text: CLOSE_TEXT,
+          type: 'button',
+          value: userID,
+        }],
+      }),
   };
 });
 
 router.post('/button', async (ctx) => {
   const body = JSON.parse(ctx.request.body.payload);
 
-  logger.log(body);
-
   const { callback_id: callbackID, user, message_ts: ts, original_message: originalMessage } = body;
 
-  const lunches = originalMessage.attachments
+  const attachments = originalMessage.attachments.slice(0, -1);
+  const closeAction = originalMessage.attachments[originalMessage.attachments.length - 1];
+  const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(closeAction.actions[0].value);
+
+  logger.log({
+    callbackID,
+    user,
+    action: originalMessage.attachments.find(attachment => attachment.callback_id === callbackID),
+  });
+
+  // press close/reopen button by authorized users
+  if (callbackID === CLOSE_ACTION) {
+    if (!closeUserWhiteList.includes(user.id)) {
+      logger.log('❌  Authorized staffs only!');
+      return;
+    }
+
+    closeAction.actions[0].text = closeAction.actions[0].text === CLOSE_TEXT
+      ? REOPEN_TEXT
+      : CLOSE_TEXT;
+
+    ctx.body = {
+      ...originalMessage,
+      attachments: attachments
+        .concat(closeAction),
+    };
+
+    return;
+  }
+
+  // order closed, block requests from un-authorized users
+  if (closeAction.actions[0].text === REOPEN_TEXT && !closeUserWhiteList.includes(user.id)) {
+    logger.log('⚠️  The order is closed!');
+    return;
+  }
+
+  const lunches = attachments
     .reduce((map, lunch) => (
       map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
     ), new Map());
@@ -56,7 +112,7 @@ router.post('/button', async (ctx) => {
 
   ctx.body = {
     ...originalMessage,
-    attachments: originalMessage.attachments
+    attachments: attachments
       .map((lunch) => {
         const set = store.get(ts, lunch.callback_id);
 
@@ -68,7 +124,8 @@ router.post('/button', async (ctx) => {
             text: `${COUNT_EMOJI}${set.size ? ` ${set.size}` : ''}`,
           }],
         };
-      }),
+      })
+      .concat(closeAction),
   };
 });
 
