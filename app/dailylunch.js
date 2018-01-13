@@ -16,7 +16,7 @@ const router = new Router();
 router.post('/create', async (ctx) => {
   const { user_name: userName, user_id: userID, channel_name: channelName, text } = ctx.request.body;
 
-  logger.log({
+  logger.log('/create', {
     userID,
     userName,
     channelName,
@@ -63,7 +63,7 @@ router.post('/button', async (ctx) => {
   const closeAction = originalMessage.attachments[originalMessage.attachments.length - 1];
   const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(closeAction.actions[0].value);
 
-  logger.log({
+  logger.log('/button', {
     callbackID,
     user,
     action: originalMessage.attachments.find(attachment => attachment.callback_id === callbackID),
@@ -72,7 +72,7 @@ router.post('/button', async (ctx) => {
   // press close/reopen button by authorized users
   if (callbackID === CLOSE_ACTION) {
     if (!closeUserWhiteList.includes(user.id)) {
-      logger.log('❌  Authorized staffs only!');
+      logger.error('Authorized staffs only!');
       return;
     }
 
@@ -91,7 +91,7 @@ router.post('/button', async (ctx) => {
 
   // order closed, block requests from un-authorized users
   if (closeAction.actions[0].text === REOPEN_TEXT && !closeUserWhiteList.includes(user.id)) {
-    logger.log('⚠️  The order is closed!');
+    logger.warn('The order is closed!');
     return;
   }
 
