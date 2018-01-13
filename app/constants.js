@@ -5,9 +5,9 @@ exports.CLOSE_ACTION = 'close-order';
 exports.CLOSE_TEXT = '🚫 Close';
 exports.REOPEN_TEXT = '🚫 Reopen';
 
-exports.CLOSE_USER_WHITE_LIST = [
-  'U4PRX3K43', // kaihao
-  'U4WM3NCPM', // julie
-  'U0FST0VCP', // miffy
-  'U8L3P7QDV', // claire.h
-];
+// kaihao, julie, miffy, claire.h
+exports.CLOSE_USER_WHITE_LIST = process.env.CLOSE_USER_WHITE_LIST
+  .split(',')
+  .map(user => user.trim())
+  .filter(Boolean);
+

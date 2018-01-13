@@ -17,7 +17,7 @@
     "start": "node app/index.js",
     "lint": "eslint app",
     "test": "jest",
-    "deploy": "now --public -e NODE_ENV=\"production\""
+    "deploy": "now --public --dotenv -e NODE_ENV=\"production\""
   },
   "engines": {
     "node": "8.x.x"
