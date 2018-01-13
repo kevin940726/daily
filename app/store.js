@@ -3,6 +3,10 @@ class Store {
     this.store = new Map();
   }
 
+  has(ts) {
+    return this.store.has(ts);
+  }
+
   set(ts, lunches) {
     if (!this.store.has(ts)) {
       this.store.set(ts, new Map());
@@ -23,20 +27,17 @@ class Store {
     });
   }
 
-  get(ts, callbackID) {
+  getLunch(ts, callbackID) {
     return this.store.get(ts).get(callbackID);
   }
 
-  add(ts, callbackID, user) {
-    this.store.get(ts).get(callbackID).add(user);
-  }
-
-  delete(ts, callbackID, user) {
-    this.store.get(ts).get(callbackID).delete(user);
-  }
-
-  has(ts, callbackID, user) {
-    return this.store.get(ts).get(callbackID).has(user);
+  toggleUser(ts, callbackID, user) {
+    const lunch = this.store.get(ts).get(callbackID);
+    if (lunch.has(user)) {
+      lunch.delete(user);
+    } else {
+      lunch.add(user);
+    }
   }
 }
 

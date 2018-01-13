@@ -59,8 +59,8 @@ router.post('/button', async (ctx) => {
 
   const { callback_id: callbackID, user, message_ts: ts, original_message: originalMessage } = body;
 
-  const attachments = originalMessage.attachments.slice(0, -1);
-  const closeAction = originalMessage.attachments[originalMessage.attachments.length - 1];
+  const attachments = originalMessage.attachments.filter(attachment => attachment.callback_id !== CLOSE_ACTION);
+  const closeAction = originalMessage.attachments.find(attachment => attachment.callback_id === CLOSE_ACTION);
   const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(closeAction.actions[0].value);
 
   logger.log('/button', {
@@ -95,26 +95,24 @@ router.post('/button', async (ctx) => {
     return;
   }
 
-  const lunches = attachments
-    .reduce((map, lunch) => (
-      map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
-    ), new Map());
+  if (!store.has(ts)) {
+    const lunches = attachments
+      .reduce((map, lunch) => (
+        map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
+      ), new Map());
 
-  store.set(ts, lunches);
+    store.set(ts, lunches);
+  }
 
   const currentUser = `<@${user.id}>`;
 
-  if (store.has(ts, callbackID, currentUser)) {
-    store.delete(ts, callbackID, currentUser);
-  } else {
-    store.add(ts, callbackID, currentUser);
-  }
+  store.toggleUser(ts, callbackID, currentUser);
 
   ctx.body = {
     ...originalMessage,
     attachments: attachments
       .map((lunch) => {
-        const set = store.get(ts, lunch.callback_id);
+        const set = store.getLunch(ts, lunch.callback_id);
 
         return {
           ...lunch,
