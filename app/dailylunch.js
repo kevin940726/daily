@@ -127,4 +127,8 @@ router.post('/button', async (ctx) => {
   };
 });
 
+router.get('/', (ctx) => {
+  ctx.body = '200';
+});
+
 module.exports = router;
