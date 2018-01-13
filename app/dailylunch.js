@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const logger = require('./logger');
 const store = require('./store');
+const { respondMessage } = require('./slack');
 const { mapLunchTextToSet, mapSetToLunchText } = require('./utils');
 const {
   COUNT_EMOJI,
@@ -14,7 +15,13 @@ const {
 const router = new Router();
 
 router.post('/create', async (ctx) => {
-  const { user_name: userName, user_id: userID, channel_name: channelName, text } = ctx.request.body;
+  const {
+    user_name: userName,
+    user_id: userID,
+    channel_name: channelName,
+    text,
+    response_url: responseURL,
+  } = ctx.request.body;
 
   logger.log('/create', {
     userID,
@@ -27,7 +34,10 @@ router.post('/create', async (ctx) => {
     .map(lunch => lunch.trim())
     .filter(Boolean);
 
-  ctx.body = {
+  ctx.status = 200;
+  ctx.body = null;
+
+  respondMessage(responseURL, {
     response_type: 'in_channel',
     attachments: lunches
       .map((lunch, index) => ({
@@ -42,22 +52,30 @@ router.post('/create', async (ctx) => {
         }],
       }))
       .concat({
+        title: '',
         callback_id: CLOSE_ACTION,
         color: 'warning',
         actions: [{
           name: CLOSE_ACTION,
           text: CLOSE_TEXT,
           type: 'button',
+          style: 'danger',
           value: userID,
         }],
       }),
-  };
+  });
 });
 
 router.post('/button', async (ctx) => {
   const body = JSON.parse(ctx.request.body.payload);
 
-  const { callback_id: callbackID, user, message_ts: ts, original_message: originalMessage } = body;
+  const {
+    callback_id: callbackID,
+    user,
+    message_ts: ts,
+    original_message: originalMessage,
+    response_url: responseURL,
+  } = body;
 
   const attachments = originalMessage.attachments.filter(attachment => attachment.callback_id !== CLOSE_ACTION);
   const closeAction = originalMessage.attachments.find(attachment => attachment.callback_id === CLOSE_ACTION);
@@ -73,6 +91,17 @@ router.post('/button', async (ctx) => {
   if (callbackID === CLOSE_ACTION) {
     if (!closeUserWhiteList.includes(user.id)) {
       logger.error('Authorized staffs only!');
+
+      ctx.status = 200;
+      ctx.body = '';
+
+      respondMessage(responseURL, {
+        response_type: 'ephemeral',
+        replace_original: false,
+        text: '❎  Authorized staffs only!',
+        color: 'danger',
+      });
+
       return;
     }
 
@@ -92,6 +121,17 @@ router.post('/button', async (ctx) => {
   // order closed, block requests from un-authorized users
   if (closeAction.actions[0].text === REOPEN_TEXT && !closeUserWhiteList.includes(user.id)) {
     logger.warn('The order is closed!');
+
+    ctx.status = 200;
+    ctx.body = '';
+
+    respondMessage(responseURL, {
+      response_type: 'ephemeral',
+      replace_original: false,
+      text: '⚠️ The order is closed!',
+      color: 'warning',
+    });
+
     return;
   }
 
