@@ -94,6 +94,7 @@ router.post('/button', async (ctx) => {
       ), new Map());
 
     store.set(ts, lunches);
+    store.setIsClosed(ts, closeAction.actions[0].text === REOPEN_TEXT);
   }
 
   /**
