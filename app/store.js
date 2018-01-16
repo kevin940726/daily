@@ -25,6 +25,8 @@ class Store {
         set.add(user);
       });
     });
+
+    message.set('isClosed', false);
   }
 
   getLunch(ts, callbackID) {
@@ -38,6 +40,14 @@ class Store {
     } else {
       lunch.add(user);
     }
+  }
+
+  getIsClosed(ts) {
+    return !!this.store.get(ts).get('isClosed');
+  }
+
+  setIsClosed(ts, isClosed) {
+    this.store.get(ts).set('isClosed', !!isClosed);
   }
 }
 

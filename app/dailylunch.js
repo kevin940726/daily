@@ -87,7 +87,18 @@ router.post('/button', async (ctx) => {
     action: originalMessage.attachments.find(attachment => attachment.callback_id === callbackID),
   });
 
-  // press close/reopen button by authorized users
+  if (!store.has(ts)) {
+    const lunches = attachments
+      .reduce((map, lunch) => (
+        map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
+      ), new Map());
+
+    store.set(ts, lunches);
+  }
+
+  /**
+   * press close/reopen button by authorized users
+   */
   if (callbackID === CLOSE_ACTION) {
     if (!closeUserWhiteList.includes(user.id)) {
       logger.error('Authorized staffs only!');
@@ -105,21 +116,58 @@ router.post('/button', async (ctx) => {
       return;
     }
 
-    closeAction.actions[0].text = closeAction.actions[0].text === CLOSE_TEXT
-      ? REOPEN_TEXT
-      : CLOSE_TEXT;
+    let lunches = attachments;
+    if (store.getIsClosed(ts)) {
+      // closed, reopen
+      closeAction.actions[0].text = CLOSE_TEXT;
+      store.setIsClosed(ts, false);
+
+      lunches = lunches
+        .map((lunch, index) => {
+          const set = store.getLunch(ts, lunch.callback_id);
+          const title = lunch.title.split(' ').slice(1).join(' ');
+
+          return {
+            ...lunch,
+            title,
+            actions: [{
+              name: `lunch-${index}`,
+              text: `${COUNT_EMOJI}${set.size ? ` ${set.size}` : ''}`,
+              type: 'button',
+              value: title,
+            }],
+          };
+        });
+    } else {
+      // opened, close
+      closeAction.actions[0].text = REOPEN_TEXT;
+      store.setIsClosed(ts, true);
+
+      lunches = lunches
+        .map((lunch) => {
+          const set = store.getLunch(ts, lunch.callback_id);
+
+          return {
+            ...lunch,
+            title: `(${set.size}) ${lunch.title}`,
+            actions: null,
+          };
+        });
+    }
 
     ctx.body = {
       ...originalMessage,
-      attachments: attachments
+      attachments: lunches
         .concat(closeAction),
     };
 
     return;
   }
 
-  // order closed, block requests from un-authorized users
-  if (closeAction.actions[0].text === REOPEN_TEXT && !closeUserWhiteList.includes(user.id)) {
+  /**
+   * order closed
+   */
+  if (store.getIsClosed(ts)) {
     logger.warn('The order is closed!');
 
     ctx.status = 200;
@@ -135,15 +183,9 @@ router.post('/button', async (ctx) => {
     return;
   }
 
-  if (!store.has(ts)) {
-    const lunches = attachments
-      .reduce((map, lunch) => (
-        map.set(lunch.callback_id, mapLunchTextToSet(lunch.text))
-      ), new Map());
-
-    store.set(ts, lunches);
-  }
-
+  /**
+   * usual user click on plus button
+   */
   const currentUser = `<@${user.id}>`;
 
   store.toggleUser(ts, callbackID, currentUser);
