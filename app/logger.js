@@ -38,9 +38,7 @@ levels.forEach((level) => {
     );
 
     if (data) {
-      console.log(
-        chalk`{${levelConfig.color} ${levelConfig.format(label)}}`
-      );
+      console.log(JSON.stringify(data, null, 2));
     }
   };
 });
