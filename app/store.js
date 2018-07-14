@@ -1,54 +1,121 @@
-class Store {
-  constructor() {
-    this.store = new Map();
-  }
+const admin = require('firebase-admin');
 
-  has(ts) {
-    return this.store.has(ts);
-  }
+const serviceAccount = JSON.parse(
+  Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString()
+);
 
-  set(ts, lunches) {
-    if (!this.store.has(ts)) {
-      this.store.set(ts, new Map());
-    }
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-    const message = this.store.get(ts);
+/**
+ * Lunch {
+ *   [lunchID]: {
+ *     lunchID: string,
+ *     messageID: string,
+ *     isClosed: boolean,
+ *     userID: string,
+ *
+ *     users: Users {
+ *       [userID]: timestamp
+ *     },
+ *
+ *     orders: Orders {
+ *       [userID]: {
+ *         userID: string,
+ *         count: number,
+ *         updateTimestamp: timestamp
+ *       }
+ *     }
+ *
+ *     orders: Orders {
+ *        [userID]: {
+ *          userID: string,
+ *          count: number,
+ *          updateTimestamp: timestamp
+ *       }
+ *     }
+ *   }
+ * }
+ */
+const db = admin.firestore();
+const lunchCollection = db.collection('lunch');
+const messagesCollection = db.collection('messages');
 
-    lunches.forEach((users, callbackID) => {
-      if (!message.has(callbackID)) {
-        message.set(callbackID, new Set());
-      }
+exports.createLunch = async (messageID, { lunch, userID }) => {
+  const batch = db.batch();
+  const messageRef = messagesCollection.doc(messageID);
 
-      const set = message.get(callbackID);
+  batch.set(messageRef, {
+    messageID,
+    userID,
+    isClosed: false,
+    lunch: lunch.map(l => l.lunchID),
+  });
 
-      users.forEach((user) => {
-        set.add(user);
-      });
+  lunch.forEach(l => {
+    batch.set(lunchCollection.doc(l.lunchID), {
+      lunchID: l.lunchID,
+      messageID,
+      name: l.name,
+      price: l.price,
+      users: {},
     });
+  });
 
-    message.set('isClosed', false);
-  }
+  return batch.commit();
+};
 
-  getLunch(ts, callbackID) {
-    return this.store.get(ts).get(callbackID);
-  }
+exports.orderLunch = async (lunchID, { userID, action }) => {
+  const lunchRef = lunchCollection.doc(lunchID);
 
-  toggleUser(ts, callbackID, user) {
-    const lunch = this.store.get(ts).get(callbackID);
-    if (lunch.has(user)) {
-      lunch.delete(user);
-    } else {
-      lunch.add(user);
+  return db.runTransaction(async t => {
+    const doc = await t.get(lunchRef);
+    const delta = action === 'minus' ? -1 : 1;
+    const updateTimestamp = admin.firestore.FieldValue.serverTimestamp();
+    const lunchData = doc.data();
+    const userObj = lunchData.users[userID];
+
+    if (!userObj) {
+      return t.update(lunchRef, {
+        [`users.${userID}`]: {
+          userID,
+          count: Math.max(0 + delta, 0),
+          updateTimestamp,
+        },
+      });
     }
-  }
 
-  getIsClosed(ts) {
-    return !!this.store.get(ts).get('isClosed');
-  }
+    const count = userObj.count || 0;
 
-  setIsClosed(ts, isClosed) {
-    this.store.get(ts).set('isClosed', !!isClosed);
-  }
-}
+    return t.update(lunchRef, {
+      [`users.${userID}.count`]: Math.max(count + delta, 0),
+      [`users.${userID}.updateTimestamp`]: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+};
 
-module.exports = new Store();
+exports.getMessageLunch = async messageID => {
+  const messageLunchSnapshot = await lunchCollection
+    .where('messageID', '==', messageID)
+    .get();
+
+  const messageLunchList = [];
+  messageLunchSnapshot.forEach(doc => {
+    messageLunchList.push(doc.data());
+  });
+
+  return messageLunchList;
+};
+
+exports.setMessageClose = async (messageID, isClosed) => {
+  return messagesCollection.doc(messageID).update({
+    isClosed,
+  });
+};
+
+exports.getMessageIsClosed = async messageID => {
+  const messageDoc = await messagesCollection.doc(messageID).get();
+
+  return !!messageDoc.data().isClosed;
+};

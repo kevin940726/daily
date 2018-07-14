@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
 const dailylunch = require('./dailylunch');
@@ -7,7 +9,6 @@ const app = new Koa();
 
 app.use(bodyParser());
 
-app.use(dailylunch.routes())
-  .use(dailylunch.allowedMethods());
+app.use(dailylunch.routes()).use(dailylunch.allowedMethods());
 
 app.listen(PORT);
