@@ -1,4 +1,12 @@
-const { MAIN_COLOR, COUNT_EMOJI, MINUS_EMOJI } = require('./constants');
+const {
+  MAIN_COLOR,
+  COUNT_EMOJI,
+  MINUS_EMOJI,
+  COLLISION_EMOJI,
+  CLOSE_ACTION,
+  CLOSE_TEXT,
+  REOPEN_TEXT,
+} = require('./constants');
 
 exports.buildAttachments = (lunches, { isClosed } = {}) =>
   lunches.map(lunch => ({
@@ -24,17 +32,39 @@ exports.buildAttachments = (lunches, { isClosed } = {}) =>
         ],
   }));
 
-exports.getLunch = lunchList =>
-  lunchList.map(lunch => ({
-    name: lunch.name,
-    lunchID: lunch.lunchID,
-    price: lunch.price,
-    text: Object.values(lunch.users)
-      .sort((a, b) => a.updateTimestamp - b.updateTimestamp)
-      .filter(u => u.count > 0)
-      .map(u => `<@${u.userID}>${u.count > 1 ? `(${u.count})` : ''}`)
-      .join(', '),
-    total: Object.values(lunch.users)
-      .map(u => u.count)
-      .reduce((sum, cur) => sum + cur, 0),
-  }));
+exports.buildCloseAction = (messageID, isClosed) => ({
+  title: '',
+  callback_id: messageID,
+  color: 'warning',
+  actions: [
+    {
+      name: CLOSE_ACTION,
+      text: isClosed ? REOPEN_TEXT : CLOSE_TEXT,
+      type: 'button',
+      style: 'danger',
+      value: CLOSE_ACTION,
+    },
+  ],
+});
+
+exports.getLunch = (lunchList, exceedUsers = {}) =>
+  lunchList.map(lunch => {
+    const users = Object.values(lunch.users);
+
+    return {
+      name: lunch.name,
+      lunchID: lunch.lunchID,
+      price: lunch.price,
+      text: users
+        .sort((a, b) => a.createTimestamp - b.createTimestamp)
+        .filter(u => u.count > 0)
+        .map(
+          u =>
+            `<@${u.userID}>${u.count > 1 ? `(${u.count})` : ''} ${
+              exceedUsers[u.userID] ? COLLISION_EMOJI : ''
+            }`
+        )
+        .join(', '),
+      total: users.map(u => u.count).reduce((sum, cur) => sum + cur, 0),
+    };
+  });

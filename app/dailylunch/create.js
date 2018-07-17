@@ -1,40 +1,43 @@
-const nanoID = require('nanoid');
+const generate = require('nanoid/generate');
+const url = require('nanoid/url');
 const { PRICE_REGEX, CLOSE_ACTION, CLOSE_TEXT } = require('../constants');
 const { createLunch } = require('../store');
 const logger = require('../logger');
-const { respondMessage } = require('../slack');
+const { postChat } = require('../slack');
 const { buildAttachments } = require('../utils');
+
+const nanoID = () => generate(url.replace('~', '-'), 16);
 
 const create = async ctx => {
   const {
     user_name: userName,
     user_id: userID,
     channel_name: channelName,
+    channel_id: channelID,
     text,
-    response_url: responseURL,
   } = ctx.request.body;
+  console.log(ctx.request.body);
 
   const messageID = nanoID();
+  // TODO: add condition here
+  const isDailylunch = true;
 
   const lunches = text
     .split('\r\n')
     .map(lunch => lunch.trim())
     .filter(Boolean)
-    .map(lunch => ({
+    .map((lunch, index) => ({
       lunchID: nanoID(),
       name: lunch,
       price: parseFloat((lunch.match(PRICE_REGEX) || [])[1]) || 0,
+      index,
     }));
-
-  await createLunch(messageID, {
-    lunch: lunches,
-    userID,
-  });
 
   logger.log('/create', {
     userID,
     userName,
     channelName,
+    channelID,
     text,
     messageID,
   });
@@ -42,22 +45,35 @@ const create = async ctx => {
   ctx.status = 200;
   ctx.body = null;
 
-  respondMessage(responseURL, {
-    response_type: 'in_channel',
-    attachments: buildAttachments(lunches).concat({
-      title: '',
-      callback_id: messageID,
-      color: 'warning',
-      actions: [
-        {
-          name: CLOSE_ACTION,
-          text: CLOSE_TEXT,
-          type: 'button',
-          style: 'danger',
-          value: CLOSE_ACTION,
-        },
-      ],
-    }),
+  postChat(
+    { channel: channelID },
+    {
+      response_type: 'in_channel',
+      attachments: buildAttachments(lunches).concat({
+        title: '',
+        callback_id: messageID,
+        color: 'warning',
+        actions: [
+          {
+            name: CLOSE_ACTION,
+            text: CLOSE_TEXT,
+            type: 'button',
+            style: 'danger',
+            value: CLOSE_ACTION,
+          },
+        ],
+      }),
+    }
+  ).then(response => {
+    if (response && response.ok) {
+      createLunch(messageID, {
+        lunch: lunches,
+        userID,
+        isDailylunch,
+        channelID,
+        messageTS: response.message.ts,
+      });
+    }
   });
 };
 

@@ -4,6 +4,8 @@ const {
   getMessageLunch,
   getMessageIsClosed,
   setMessageClose,
+  updateMessage,
+  updateMessageTS,
 } = require('../store');
 const { respondMessage } = require('../slack');
 const { getLunch, buildAttachments } = require('../utils');
@@ -16,7 +18,15 @@ const {
 
 const handleCloseAction = async (
   ctx,
-  { closeAction, userID, responseURL, messageID, isClosed, originalMessage }
+  {
+    closeAction,
+    userID,
+    responseURL,
+    messageID,
+    isClosed,
+    lunchOrder,
+    originalMessage,
+  }
 ) => {
   const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(
     closeAction.actions[0].value
@@ -38,8 +48,8 @@ const handleCloseAction = async (
     return;
   }
 
-  const nextLunchList = await getMessageLunch(messageID);
-
+  const nextLunch = await getMessageLunch(messageID);
+  const nextLunchList = lunchOrder.map(launchID => nextLunch[launchID]);
   const lunches = getLunch(nextLunchList);
 
   let lunchAttachments;
@@ -74,6 +84,7 @@ const button = async ctx => {
     actions: [{ value: action }],
     callback_id: callbackID,
     user: { id: userID },
+    message_ts: messageTS,
     original_message: originalMessage,
     response_url: responseURL,
   } = body;
@@ -88,6 +99,10 @@ const button = async ctx => {
   const messageID = closeAction.callback_id;
   const isClosed = await getMessageIsClosed(messageID);
 
+  const lunchOrder = originalMessage.attachments
+    .map(attachment => attachment.callback_id)
+    .filter(lunchID => lunchID !== messageID);
+
   logger.log('/button', {
     userID,
     lunchID,
@@ -95,6 +110,8 @@ const button = async ctx => {
     action,
     isClosed,
   });
+
+  updateMessageTS(messageID, messageTS);
 
   /**
    * press close/reopen button by authorized users
@@ -106,6 +123,7 @@ const button = async ctx => {
       responseURL,
       messageID,
       isClosed,
+      lunchOrder,
       originalMessage,
     });
   }
@@ -132,21 +150,16 @@ const button = async ctx => {
   /**
    * usual user click on plus button
    */
-  await orderLunch(lunchID, {
+  const messagesShouldUpdate = await orderLunch(lunchID, {
     userID,
     action,
   });
 
-  const nextLunchList = await getMessageLunch(messageID);
-
-  const lunches = getLunch(nextLunchList);
-
   ctx.status = 200;
   ctx.body = null;
 
-  return respondMessage(responseURL, {
-    ...originalMessage,
-    attachments: buildAttachments(lunches).concat(closeAction),
+  messagesShouldUpdate.forEach(messageID => {
+    updateMessage(messageID);
   });
 };
 
