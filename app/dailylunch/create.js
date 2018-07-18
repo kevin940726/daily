@@ -6,7 +6,8 @@ const logger = require('../logger');
 const { postChat } = require('../slack');
 const { buildAttachments } = require('../utils');
 
-const nanoID = () => generate(url.replace('~', '-'), 16);
+const alphabets = url.replace('~', '-');
+const nanoID = () => generate(alphabets, 16);
 
 const create = async ctx => {
   const {

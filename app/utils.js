@@ -56,7 +56,7 @@ exports.getLunch = (lunchList, exceedUsers = {}) =>
       lunchID: lunch.lunchID,
       price: lunch.price,
       text: users
-        .sort((a, b) => a.createTimestamp - b.createTimestamp)
+        .sort((a, b) => a.updateTimestamp - b.updateTimestamp)
         .filter(u => u.count > 0)
         .map(
           u =>
@@ -68,3 +68,15 @@ exports.getLunch = (lunchList, exceedUsers = {}) =>
       total: users.map(u => u.count).reduce((sum, cur) => sum + cur, 0),
     };
   });
+
+const TIMEZONE_OFFSET = 8 * 60 * 60 * 1000;
+
+exports.getDayKey = timestamp => {
+  const shiftedDate = new Date(timestamp + TIMEZONE_OFFSET);
+
+  return [
+    shiftedDate.getFullYear(),
+    shiftedDate.getMonth() + 1,
+    shiftedDate.getDate(),
+  ].join('-');
+};

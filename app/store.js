@@ -1,7 +1,12 @@
 const admin = require('firebase-admin');
 const { DAILYLUNCH_MAX_PRICE } = require('./constants');
 const { updateChat } = require('./slack');
-const { getLunch, buildAttachments, buildCloseAction } = require('./utils');
+const {
+  getLunch,
+  buildAttachments,
+  buildCloseAction,
+  getDayKey,
+} = require('./utils');
 
 const serviceAccount = JSON.parse(
   Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString()
@@ -45,8 +50,6 @@ const db = admin.firestore();
 const lunchCollection = db.collection('lunch');
 const messagesCollection = db.collection('messages');
 const dailylunchCollection = db.collection('dailylunch');
-
-const getDayKey = timestamp => new Date(timestamp).toLocaleDateString('zh-TW');
 
 exports.updateMessage = async messageID => {
   const [messageDoc, messageLunch] = await Promise.all([
@@ -157,6 +160,10 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
 
     let messagesShouldUpdate = [lunchData.messageID];
 
+    const count = (userObj && userObj.count) || 0;
+    const nextCount = Math.max(count + delta, 0);
+    const deltaPrice = (nextCount - count) * lunchData.price;
+
     if (lunchData.isDailylunch) {
       const createTimestamp = lunchData.createTimestamp;
       const dayKey = getDayKey(createTimestamp);
@@ -170,7 +177,7 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
         (dailylunchUserSnapshot.exists &&
           dailylunchUserSnapshot.get('totalPrice')) ||
         0;
-      const totalPrice = currentPrice + delta * lunchData.price;
+      const totalPrice = Math.max(currentPrice + deltaPrice, 0);
 
       if (dailylunchUserSnapshot.exists) {
         await t.update(dailylunchUserRef, {
@@ -184,9 +191,6 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
 
       messagesShouldUpdate = Object.keys(dailylunchData.messages);
     }
-
-    const count = (userObj && userObj.count) || 0;
-    const nextCount = Math.max(count + delta, 0);
 
     if (!userObj) {
       await t.update(lunchRef, {
