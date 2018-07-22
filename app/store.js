@@ -47,11 +47,23 @@ admin.initializeApp({
  * }
  */
 const db = admin.firestore();
+db.settings({
+  timestampsInSnapshots: true,
+});
+
 const lunchCollection = db.collection('lunch');
 const messagesCollection = db.collection('messages');
 const dailylunchCollection = db.collection('dailylunch');
 
-exports.updateMessage = async messageID => {
+dailylunchCollection.get().then(snap => {
+  snap.forEach(doc => {
+    console.log(doc.data());
+  });
+});
+
+const updateQueue = new Map();
+
+const createMessageUpdater = messageID => async () => {
   const [messageDoc, messageLunch] = await Promise.all([
     messagesCollection.doc(messageID).get(),
     exports.getMessageLunch(messageID),
@@ -78,7 +90,9 @@ exports.updateMessage = async messageID => {
   }
 
   const lunchOrder = messageData.lunch;
-  const nextLunchList = lunchOrder.map(launchID => messageLunch[launchID]);
+  const nextLunchList = lunchOrder.map(launchID =>
+    messageLunch.find(lunch => lunch.lunchID === launchID)
+  );
   const lunches = getLunch(nextLunchList, exceedUsers);
 
   const attachments = buildAttachments(lunches).concat(
@@ -96,6 +110,17 @@ exports.updateMessage = async messageID => {
   );
 };
 
+exports.updateMessage = async messageID => {
+  updateQueue.set(
+    messageID,
+    (updateQueue.get(messageID) || Promise.resolve()).then(
+      createMessageUpdater(messageID)
+    )
+  );
+
+  return updateQueue.get(messageID)();
+};
+
 exports.createLunch = async (
   messageID,
   { lunch, userID, isDailylunch, channelID }
@@ -104,7 +129,7 @@ exports.createLunch = async (
   const messageRef = messagesCollection.doc(messageID);
   const createTimestamp = Date.now();
 
-  batch.set(messageRef, {
+  const messageData = {
     messageID,
     userID,
     isClosed: false,
@@ -112,7 +137,11 @@ exports.createLunch = async (
     createTimestamp,
     channelID,
     lunch: lunch.map(l => l.lunchID),
-  });
+  };
+
+  console.log(messageData);
+
+  batch.set(messageRef, messageData);
 
   if (isDailylunch) {
     const dayKey = getDayKey(createTimestamp);
@@ -134,15 +163,16 @@ exports.createLunch = async (
   }
 
   lunch.forEach(l => {
-    batch.set(lunchCollection.doc(l.lunchID), {
+    const lunchData = {
       lunchID: l.lunchID,
       messageID,
       createTimestamp,
       isDailylunch,
       name: l.name,
       price: l.price,
-      users: {},
-    });
+    };
+
+    batch.set(lunchCollection.doc(l.lunchID), lunchData);
   });
 
   return batch.commit();
@@ -150,17 +180,19 @@ exports.createLunch = async (
 
 exports.orderLunch = async (lunchID, { userID, action }) => {
   const lunchRef = lunchCollection.doc(lunchID);
+  const userRef = lunchRef.collection('users').doc(userID);
 
   return db.runTransaction(async t => {
     const doc = await t.get(lunchRef);
     const delta = action === 'minus' ? -1 : 1;
     const updateTimestamp = admin.firestore.FieldValue.serverTimestamp();
     const lunchData = doc.data();
-    const userObj = lunchData.users[userID];
+    const userDoc = await userRef.get();
+    const userData = userDoc.exists && userDoc.data();
 
     let messagesShouldUpdate = [lunchData.messageID];
 
-    const count = (userObj && userObj.count) || 0;
+    const count = (userData && userData.count) || 0;
     const nextCount = Math.max(count + delta, 0);
     const deltaPrice = (nextCount - count) * lunchData.price;
 
@@ -192,21 +224,19 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
       messagesShouldUpdate = Object.keys(dailylunchData.messages);
     }
 
-    if (!userObj) {
-      await t.update(lunchRef, {
-        [`users.${userID}`]: {
-          userID,
-          count: nextCount,
-          createTimestamp: updateTimestamp,
-          updateTimestamp,
-        },
+    if (!userData) {
+      await t.set(userRef, {
+        userID,
+        count: nextCount,
+        createTimestamp: updateTimestamp,
+        updateTimestamp,
+      });
+    } else {
+      await t.update(userRef, {
+        count: nextCount,
+        updateTimestamp,
       });
     }
-
-    await t.update(lunchRef, {
-      [`users.${userID}.count`]: nextCount,
-      [`users.${userID}.updateTimestamp`]: admin.firestore.FieldValue.serverTimestamp(),
-    });
 
     return messagesShouldUpdate;
   });
@@ -217,12 +247,23 @@ exports.getMessageLunch = async messageID => {
     .where('messageID', '==', messageID)
     .get();
 
-  const messageLunch = {};
-  messageLunchSnapshot.forEach(doc => {
-    messageLunch[doc.id] = doc.data();
+  const messageLunch = [];
+  messageLunchSnapshot.forEach(async doc => {
+    const usersSnapshot = await doc.ref.collection('users').get();
+
+    const users = {};
+
+    usersSnapshot.forEach(userDoc => {
+      users[userDoc.id] = userDoc.data();
+    });
+
+    messageLunch.push({
+      ...doc.data(),
+      users,
+    });
   });
 
-  return messageLunch;
+  return Promise.all(messageLunch);
 };
 
 exports.setMessageClose = async (messageID, isClosed) => {

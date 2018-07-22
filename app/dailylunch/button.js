@@ -1,32 +1,17 @@
 const logger = require('../logger');
 const {
   orderLunch,
-  getMessageLunch,
   getMessageIsClosed,
   setMessageClose,
   updateMessage,
   updateMessageTS,
 } = require('../store');
 const { respondMessage } = require('../slack');
-const { getLunch, buildAttachments } = require('../utils');
-const {
-  CLOSE_ACTION,
-  CLOSE_TEXT,
-  REOPEN_TEXT,
-  CLOSE_USER_WHITE_LIST,
-} = require('../constants');
+const { CLOSE_ACTION, CLOSE_USER_WHITE_LIST } = require('../constants');
 
 const handleCloseAction = async (
   ctx,
-  {
-    closeAction,
-    userID,
-    responseURL,
-    messageID,
-    isClosed,
-    lunchOrder,
-    originalMessage,
-  }
+  { closeAction, userID, responseURL, messageID, isClosed }
 ) => {
   const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(
     closeAction.actions[0].value
@@ -48,33 +33,12 @@ const handleCloseAction = async (
     return;
   }
 
-  const nextLunch = await getMessageLunch(messageID);
-  const nextLunchList = lunchOrder.map(launchID => nextLunch[launchID]);
-  const lunches = getLunch(nextLunchList);
-
-  let lunchAttachments;
-
-  if (isClosed) {
-    // closed, reopen
-    closeAction.actions[0].text = CLOSE_TEXT;
-    setMessageClose(messageID, false);
-
-    lunchAttachments = buildAttachments(lunches);
-  } else {
-    // opened, close
-    closeAction.actions[0].text = REOPEN_TEXT;
-    setMessageClose(messageID, true);
-
-    lunchAttachments = buildAttachments(lunches, { isClosed: true });
-  }
+  await setMessageClose(messageID, !isClosed);
 
   ctx.status = 200;
   ctx.body = null;
 
-  return respondMessage(responseURL, {
-    ...originalMessage,
-    attachments: lunchAttachments.concat(closeAction),
-  });
+  updateMessage(messageID);
 };
 
 const button = async ctx => {
@@ -99,10 +63,6 @@ const button = async ctx => {
   const messageID = closeAction.callback_id;
   const isClosed = await getMessageIsClosed(messageID);
 
-  const lunchOrder = originalMessage.attachments
-    .map(attachment => attachment.callback_id)
-    .filter(lunchID => lunchID !== messageID);
-
   logger.log('/button', {
     userID,
     lunchID,
@@ -123,8 +83,6 @@ const button = async ctx => {
       responseURL,
       messageID,
       isClosed,
-      lunchOrder,
-      originalMessage,
     });
   }
 

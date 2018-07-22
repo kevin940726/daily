@@ -17,7 +17,6 @@ const create = async ctx => {
     channel_id: channelID,
     text,
   } = ctx.request.body;
-  console.log(ctx.request.body);
 
   const messageID = nanoID();
   // TODO: add condition here
