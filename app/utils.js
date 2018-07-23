@@ -75,8 +75,8 @@ exports.getDayKey = timestamp => {
   const shiftedDate = new Date(timestamp + TIMEZONE_OFFSET);
 
   return [
-    shiftedDate.getFullYear(),
-    shiftedDate.getMonth() + 1,
-    shiftedDate.getDate(),
+    shiftedDate.getUTCFullYear(),
+    shiftedDate.getUTCMonth() + 1,
+    shiftedDate.getUTCDate(),
   ].join('-');
 };

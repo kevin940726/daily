@@ -47,19 +47,10 @@ admin.initializeApp({
  * }
  */
 const db = admin.firestore();
-db.settings({
-  timestampsInSnapshots: true,
-});
 
 const lunchCollection = db.collection('lunch');
 const messagesCollection = db.collection('messages');
 const dailylunchCollection = db.collection('dailylunch');
-
-dailylunchCollection.get().then(snap => {
-  snap.forEach(doc => {
-    console.log(doc.data());
-  });
-});
 
 const updateQueue = new Map();
 
@@ -118,7 +109,7 @@ exports.updateMessage = async messageID => {
     )
   );
 
-  return updateQueue.get(messageID)();
+  return updateQueue.get(messageID);
 };
 
 exports.createLunch = async (
@@ -138,8 +129,6 @@ exports.createLunch = async (
     channelID,
     lunch: lunch.map(l => l.lunchID),
   };
-
-  console.log(messageData);
 
   batch.set(messageRef, messageData);
 
@@ -248,22 +237,26 @@ exports.getMessageLunch = async messageID => {
     .get();
 
   const messageLunch = [];
-  messageLunchSnapshot.forEach(async doc => {
-    const usersSnapshot = await doc.ref.collection('users').get();
-
-    const users = {};
-
-    usersSnapshot.forEach(userDoc => {
-      users[userDoc.id] = userDoc.data();
-    });
-
-    messageLunch.push({
-      ...doc.data(),
-      users,
-    });
+  messageLunchSnapshot.forEach(doc => {
+    messageLunch.push(doc);
   });
 
-  return Promise.all(messageLunch);
+  return Promise.all(
+    messageLunch.map(async doc => {
+      const usersSnapshot = await doc.ref.collection('users').get();
+
+      const users = {};
+
+      usersSnapshot.forEach(userDoc => {
+        users[userDoc.id] = userDoc.data();
+      });
+
+      return {
+        ...doc.data(),
+        users,
+      };
+    })
+  );
 };
 
 exports.setMessageClose = async (messageID, isClosed) => {
