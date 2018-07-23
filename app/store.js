@@ -86,7 +86,7 @@ const createMessageUpdater = messageID => async () => {
   );
   const lunches = getLunch(nextLunchList, exceedUsers);
 
-  const attachments = buildAttachments(lunches).concat(
+  const attachments = buildAttachments(lunches, { isClosed }).concat(
     buildCloseAction(messageID, isClosed)
   );
 

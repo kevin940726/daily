@@ -7,7 +7,7 @@ exports.CLOSE_ACTION = 'close-order';
 exports.CLOSE_TEXT = '🚫 Close';
 exports.REOPEN_TEXT = '🚫 Reopen';
 
-exports.PRICE_REGEX = /\$([\d.]+)$/;
+exports.PRICE_REGEX = /[$|＄]([\d.]+)/;
 
 exports.DAILYLUNCH_MAX_PRICE = 150;
 

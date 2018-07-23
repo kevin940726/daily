@@ -1,6 +1,11 @@
 const generate = require('nanoid/generate');
 const url = require('nanoid/url');
-const { PRICE_REGEX, CLOSE_ACTION, CLOSE_TEXT } = require('../constants');
+const {
+  PRICE_REGEX,
+  CLOSE_ACTION,
+  CLOSE_TEXT,
+  CLOSE_USER_WHITE_LIST,
+} = require('../constants');
 const { createLunch } = require('../store');
 const logger = require('../logger');
 const { postChat } = require('../slack');
@@ -19,8 +24,6 @@ const create = async ctx => {
   } = ctx.request.body;
 
   const messageID = nanoID();
-  // TODO: add condition here
-  const isDailylunch = true;
 
   const lunches = text
     .split('\r\n')
@@ -32,6 +35,11 @@ const create = async ctx => {
       price: parseFloat((lunch.match(PRICE_REGEX) || [])[1]) || 0,
       index,
     }));
+
+  // TODO: add condition here
+  const isDailylunch =
+    CLOSE_USER_WHITE_LIST.includes(userID) &&
+    lunches.every(lunch => !Number.isNaN(lunch.price));
 
   logger.log('/create', {
     userID,
