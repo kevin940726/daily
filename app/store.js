@@ -63,32 +63,17 @@ const createMessageUpdater = messageID => async () => {
   const messageData = messageDoc.data();
   const isClosed = messageData.isClosed;
 
-  const isDailylunch = messageData.isDailylunch;
-
-  const exceedUsers = {};
-
-  if (isDailylunch) {
-    const dayKey = getDayKey(messageData.createTimestamp);
-    const dailylunchRef = dailylunchCollection.doc(dayKey);
-    const dailylunchExceedUsers = await dailylunchRef
-      .collection('users')
-      .where('totalPrice', '>', DAILYLUNCH_MAX_PRICE)
-      .get();
-
-    dailylunchExceedUsers.forEach(userDoc => {
-      exceedUsers[userDoc.id] = true;
-    });
-  }
-
   const lunchOrder = messageData.lunch;
   const nextLunchList = lunchOrder.map(launchID =>
     messageLunch.find(lunch => lunch.lunchID === launchID)
   );
-  const lunches = getLunch(nextLunchList, exceedUsers);
+  const lunches = getLunch(nextLunchList);
 
   const attachments = buildAttachments(lunches, { isClosed }).concat(
     buildCloseAction(messageID, isClosed)
   );
+
+  console.log(attachments);
 
   return updateChat(
     {
@@ -114,7 +99,7 @@ exports.updateMessage = async messageID => {
 
 exports.createLunch = async (
   messageID,
-  { lunch, userID, isDailylunch, channelID }
+  { lunch, userID, isDailylunch, channelID, messageTS }
 ) => {
   const batch = db.batch();
   const messageRef = messagesCollection.doc(messageID);
@@ -127,6 +112,7 @@ exports.createLunch = async (
     isDailylunch,
     createTimestamp,
     channelID,
+    messageTS,
     lunch: lunch.map(l => l.lunchID),
   };
 
@@ -179,8 +165,6 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
     const userDoc = await userRef.get();
     const userData = userDoc.exists && userDoc.data();
 
-    let messagesShouldUpdate = [lunchData.messageID];
-
     const count = (userData && userData.count) || 0;
     const nextCount = Math.max(count + delta, 0);
     const deltaPrice = (nextCount - count) * lunchData.price;
@@ -189,7 +173,6 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
       const createTimestamp = lunchData.createTimestamp;
       const dayKey = getDayKey(createTimestamp);
       const dailylunchRef = dailylunchCollection.doc(dayKey);
-      const dailylunchData = (await dailylunchRef.get()).data();
       const dailylunchUsersCollection = dailylunchRef.collection('users');
       const dailylunchUserRef = dailylunchUsersCollection.doc(userID);
       const dailylunchUserSnapshot = await dailylunchUserRef.get();
@@ -200,6 +183,10 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
         0;
       const totalPrice = Math.max(currentPrice + deltaPrice, 0);
 
+      if (totalPrice > DAILYLUNCH_MAX_PRICE) {
+        return false;
+      }
+
       if (dailylunchUserSnapshot.exists) {
         await t.update(dailylunchUserRef, {
           totalPrice,
@@ -209,8 +196,6 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
           totalPrice,
         });
       }
-
-      messagesShouldUpdate = Object.keys(dailylunchData.messages);
     }
 
     if (!userData) {
@@ -227,7 +212,7 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
       });
     }
 
-    return messagesShouldUpdate;
+    return true;
   });
 };
 
@@ -269,16 +254,4 @@ exports.getMessageIsClosed = async messageID => {
   const messageDoc = await messagesCollection.doc(messageID).get();
 
   return !!messageDoc.data().isClosed;
-};
-
-exports.updateMessageTS = async (messageID, messageTS) => {
-  const messageRef = messagesCollection.doc(messageID);
-  const messageDoc = await messageRef.get();
-  const messageData = messageDoc.data();
-
-  if (!messageData.messageTS) {
-    return messageRef.update({
-      messageTS,
-    });
-  }
 };

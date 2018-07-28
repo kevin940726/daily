@@ -4,7 +4,6 @@ const {
   getMessageIsClosed,
   setMessageClose,
   updateMessage,
-  updateMessageTS,
 } = require('../store');
 const { respondMessage } = require('../slack');
 const { CLOSE_ACTION, CLOSE_USER_WHITE_LIST } = require('../constants');
@@ -48,7 +47,6 @@ const button = async ctx => {
     actions: [{ value: action }],
     callback_id: callbackID,
     user: { id: userID },
-    message_ts: messageTS,
     original_message: originalMessage,
     response_url: responseURL,
   } = body;
@@ -70,8 +68,6 @@ const button = async ctx => {
     action,
     isClosed,
   });
-
-  updateMessageTS(messageID, messageTS);
 
   /**
    * press close/reopen button by authorized users
@@ -108,7 +104,7 @@ const button = async ctx => {
   /**
    * usual user click on plus button
    */
-  const messagesShouldUpdate = await orderLunch(lunchID, {
+  const isSuccess = await orderLunch(lunchID, {
     userID,
     action,
   });
@@ -116,9 +112,16 @@ const button = async ctx => {
   ctx.status = 200;
   ctx.body = null;
 
-  messagesShouldUpdate.forEach(messageID => {
-    updateMessage(messageID);
-  });
+  if (!isSuccess) {
+    return respondMessage(responseURL, {
+      response_type: 'ephemeral',
+      replace_original: false,
+      text: '🚫 You have exceeded your daily lunch quota!',
+      color: 'warning',
+    });
+  }
+
+  updateMessage(messageID);
 };
 
 module.exports = button;
