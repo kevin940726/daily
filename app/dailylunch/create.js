@@ -2,31 +2,94 @@ const generate = require('nanoid/generate');
 const url = require('nanoid/url');
 const {
   PRICE_REGEX,
-  CLOSE_ACTION,
-  CLOSE_TEXT,
   CLOSE_USER_WHITE_LIST,
+  CALLBACK_DIALOG,
 } = require('../constants');
 const { createLunch } = require('../store');
 const logger = require('../logger');
-const { postChat } = require('../slack');
-const { buildAttachments } = require('../utils');
+const { postChat, openDialog } = require('../slack');
+const { buildAttachments, buildCloseAction } = require('../utils');
 
 const alphabets = url.replace('~', '-');
 const nanoID = () => generate(alphabets, 16);
 
-const create = async ctx => {
-  const {
-    user_name: userName,
-    user_id: userID,
-    channel_name: channelName,
-    channel_id: channelID,
-    text,
-  } = ctx.request.body;
+exports.create = async ctx => {
+  const { trigger_id: triggerID, user_id: userID, text } = ctx.request.body;
 
   const messageID = nanoID();
 
-  const lunches = text
-    .split('\r\n')
+  logger.log('/create', {
+    userID,
+    messageID,
+    triggerID,
+    text,
+  });
+
+  ctx.status = 200;
+  ctx.body = null;
+
+  const isAuthorizedDailylunch = CLOSE_USER_WHITE_LIST.includes(userID);
+
+  return openDialog(triggerID, {
+    callback_id: `${CALLBACK_DIALOG}_${messageID}`,
+    title: 'Submit new menu',
+    submit_label: 'Submit',
+    elements: [
+      {
+        type: 'text',
+        label: 'Title',
+        optional: true,
+        hint: 'The title or name of the menu',
+        name: 'title',
+      },
+      ...[
+        isAuthorizedDailylunch && {
+          type: 'select',
+          label: 'Is dailylunch?',
+          name: 'isDailylunch',
+          options: [
+            {
+              label: 'not dailylunch',
+              value: 'false',
+            },
+            {
+              label: 'is dailylunch',
+              value: 'true',
+            },
+          ],
+          value: 'true',
+        },
+      ].filter(Boolean),
+      {
+        label: 'Orders',
+        name: 'orders',
+        type: 'textarea',
+        hint: 'Lines separated orders',
+        value: text,
+      },
+    ],
+  });
+};
+
+exports.submitDialog = async ctx => {
+  const body = JSON.parse(ctx.request.body.payload);
+
+  const {
+    user: { id: userID },
+    channel: { id: channelID },
+    callback_id: callbackID,
+    submission,
+  } = body;
+
+  const messageID = callbackID.replace(`${CALLBACK_DIALOG}_`, '');
+
+  const { orders, title } = submission;
+  const isDailylunch = !!(
+    submission.isDailylunch && JSON.parse(submission.isDailylunch)
+  );
+
+  const lunches = orders
+    .split('\n')
     .map(lunch => lunch.trim())
     .filter(Boolean)
     .map((lunch, index) => ({
@@ -36,18 +99,13 @@ const create = async ctx => {
       index,
     }));
 
-  // TODO: add condition here
-  const isDailylunch =
-    CLOSE_USER_WHITE_LIST.includes(userID) &&
-    lunches.every(lunch => !Number.isNaN(lunch.price));
-
-  logger.log('/create', {
+  logger.log('/dialog', {
     userID,
-    userName,
-    channelName,
     channelID,
-    text,
     messageID,
+    title,
+    isDailylunch,
+    orders,
   });
 
   ctx.status = 200;
@@ -57,20 +115,10 @@ const create = async ctx => {
     { channel: channelID },
     {
       response_type: 'in_channel',
-      attachments: buildAttachments(lunches).concat({
-        title: '',
-        callback_id: messageID,
-        color: 'warning',
-        actions: [
-          {
-            name: CLOSE_ACTION,
-            text: CLOSE_TEXT,
-            type: 'button',
-            style: 'danger',
-            value: CLOSE_ACTION,
-          },
-        ],
-      }),
+      text: title,
+      attachments: buildAttachments(lunches).concat(
+        buildCloseAction(messageID, false)
+      ),
     }
   ).then(response => {
     if (response && response.ok) {
@@ -84,5 +132,3 @@ const create = async ctx => {
     }
   });
 };
-
-module.exports = create;

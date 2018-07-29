@@ -11,6 +11,12 @@ exports.PRICE_REGEX = /[$|＄]([\d.]+)/;
 
 exports.DAILYLUNCH_MAX_PRICE = 150;
 
+/**
+ * callback prefix
+ */
+exports.CALLBACK_DIALOG = 'DIALOG';
+exports.CALLBACK_BUTTON = 'BUTTON';
+
 // kaihao, julie, miffy, claire.h
 exports.CLOSE_USER_WHITE_LIST = process.env.CLOSE_USER_WHITE_LIST.split(',')
   .map(user => user.trim())

@@ -73,8 +73,6 @@ const createMessageUpdater = messageID => async () => {
     buildCloseAction(messageID, isClosed)
   );
 
-  console.log(attachments);
-
   return updateChat(
     {
       ts: messageData.messageTS,
@@ -253,5 +251,5 @@ exports.setMessageClose = async (messageID, isClosed) => {
 exports.getMessageIsClosed = async messageID => {
   const messageDoc = await messagesCollection.doc(messageID).get();
 
-  return !!messageDoc.data().isClosed;
+  return !!(messageDoc.exists && messageDoc.data().isClosed);
 };

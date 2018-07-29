@@ -10,7 +10,9 @@ const slackAPI = (method, payload) =>
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
-  }).then(res => res.json());
+  })
+    .then(res => res.json())
+    .catch(err => console.error(err));
 
 exports.respondMessage = (responseURL, message) =>
   fetch(responseURL, {
@@ -32,4 +34,10 @@ exports.postChat = ({ channel }, message) =>
   slackAPI('chat.postMessage', {
     channel,
     ...message,
+  });
+
+exports.openDialog = (triggerID, dialog) =>
+  slackAPI('dialog.open', {
+    trigger_id: triggerID,
+    dialog,
   });

@@ -6,7 +6,11 @@ const {
   updateMessage,
 } = require('../store');
 const { respondMessage } = require('../slack');
-const { CLOSE_ACTION, CLOSE_USER_WHITE_LIST } = require('../constants');
+const {
+  CLOSE_ACTION,
+  CLOSE_USER_WHITE_LIST,
+  CALLBACK_BUTTON,
+} = require('../constants');
 
 const handleCloseAction = async (
   ctx,
@@ -57,8 +61,8 @@ const button = async ctx => {
       attachment.actions.find(act => act.value === CLOSE_ACTION)
   );
 
-  const lunchID = callbackID;
-  const messageID = closeAction.callback_id;
+  const lunchID = callbackID.replace(`${CALLBACK_BUTTON}_`, '');
+  const messageID = closeAction.callback_id.replace(`${CALLBACK_BUTTON}_`, '');
   const isClosed = await getMessageIsClosed(messageID);
 
   logger.log('/button', {

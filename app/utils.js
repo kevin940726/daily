@@ -6,13 +6,14 @@ const {
   CLOSE_ACTION,
   CLOSE_TEXT,
   REOPEN_TEXT,
+  CALLBACK_BUTTON,
 } = require('./constants');
 
 exports.buildAttachments = (lunches, { isClosed } = {}) =>
   lunches.map(lunch => ({
     title: isClosed ? `(${lunch.total}) ${lunch.name}` : lunch.name,
     text: lunch.text,
-    callback_id: lunch.lunchID,
+    callback_id: `${CALLBACK_BUTTON}_${lunch.lunchID}`,
     color: MAIN_COLOR,
     actions: isClosed
       ? null
@@ -34,7 +35,7 @@ exports.buildAttachments = (lunches, { isClosed } = {}) =>
 
 exports.buildCloseAction = (messageID, isClosed) => ({
   title: '',
-  callback_id: messageID,
+  callback_id: `${CALLBACK_BUTTON}_${messageID}`,
   color: 'warning',
   actions: [
     {
