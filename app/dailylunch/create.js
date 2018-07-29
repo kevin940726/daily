@@ -124,6 +124,7 @@ exports.submitDialog = async ctx => {
     if (response && response.ok) {
       createLunch(messageID, {
         lunch: lunches,
+        title,
         userID,
         isDailylunch,
         channelID,

@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const { DAILYLUNCH_MAX_PRICE } = require('./constants');
+const { DAILYLUNCH_MAX_PRICE, CLOSE_USER_WHITE_LIST } = require('./constants');
 const { updateChat } = require('./slack');
 const {
   getLunch,
@@ -181,7 +181,11 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
         0;
       const totalPrice = Math.max(currentPrice + deltaPrice, 0);
 
-      if (totalPrice > DAILYLUNCH_MAX_PRICE) {
+      if (
+        totalPrice > DAILYLUNCH_MAX_PRICE &&
+        // admin users can still order
+        !CLOSE_USER_WHITE_LIST.includes(userID)
+      ) {
         return false;
       }
 
