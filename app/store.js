@@ -253,3 +253,9 @@ exports.getMessageIsClosed = async messageID => {
 
   return !!(messageDoc.exists && messageDoc.data().isClosed);
 };
+
+exports.getMessageCreatorID = async messageID => {
+  const messageDoc = await messagesCollection.doc(messageID).get();
+
+  return messageDoc.exists && messageDoc.data().userID;
+};

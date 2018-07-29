@@ -2,6 +2,7 @@ const logger = require('../logger');
 const {
   orderLunch,
   getMessageIsClosed,
+  getMessageCreatorID,
   setMessageClose,
   updateMessage,
 } = require('../store');
@@ -14,11 +15,11 @@ const {
 
 const handleCloseAction = async (
   ctx,
-  { closeAction, userID, responseURL, messageID, isClosed }
+  { userID, responseURL, messageID, isClosed }
 ) => {
-  const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(
-    closeAction.actions[0].value
-  );
+  const creatorID = await getMessageCreatorID(messageID);
+
+  const closeUserWhiteList = CLOSE_USER_WHITE_LIST.concat(creatorID);
 
   if (!closeUserWhiteList.includes(userID)) {
     logger.error('Authorized staffs only!');
@@ -78,7 +79,6 @@ const button = async ctx => {
    */
   if (action === CLOSE_ACTION) {
     return handleCloseAction(ctx, {
-      closeAction,
       userID,
       responseURL,
       messageID,
