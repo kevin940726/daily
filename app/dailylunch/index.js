@@ -1,16 +1,23 @@
 const Router = require('koa-router');
 
+const verify = require('./verify');
 const { create } = require('./create');
 const interactive = require('./interactive');
 
-const router = new Router();
+const appRouter = new Router();
+const slackRouter = new Router({
+  prefix: '/slack',
+});
 
-router.post('/slash', create);
+slackRouter.use(verify());
 
-router.post('/interactive', interactive);
+slackRouter.post('/slash', create);
+slackRouter.post('/interactive', interactive);
 
-router.get('/', ctx => {
+appRouter.get('/', ctx => {
   ctx.body = '200';
 });
 
-module.exports = router;
+appRouter.use(slackRouter.routes(), slackRouter.allowedMethods());
+
+module.exports = appRouter;

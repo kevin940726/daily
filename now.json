@@ -3,7 +3,8 @@
     "CLOSE_USER_WHITE_LIST": "U4PRX3K43,U4WM3NCPM,U0FST0VCP,U8L3P7QDV",
     "FIREBASE_CREDENTIALS": "@firebase_credentials",
     "SLACK_TOKEN": "@slack_token",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "SIGNING_SECRET": "@signing_secret"
   },
   "scale": {
     "sfo1": {
