@@ -1,13 +1,12 @@
 const fetch = require('node-fetch');
-
-const token = process.env.SLACK_TOKEN;
+const { SLACK_TOKEN } = require('./constants');
 
 const slackAPI = (method, payload) =>
   fetch(`https://slack.com/api/${method}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${SLACK_TOKEN}`,
     },
     body: JSON.stringify(payload),
   })

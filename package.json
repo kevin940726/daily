@@ -20,7 +20,8 @@
     "start": "node app/index.js",
     "lint": "eslint app",
     "test": "jest",
-    "deploy": "now --public --dotenv -e NODE_ENV=\"production\""
+    "deploy": "now --public --dotenv -e SLACK_ENV=\"production\"",
+    "deploy:dev": "now --public --dotenv -e SLACK_ENV=\"development\""
   },
   "engines": {
     "node": "^10.7.0 || >=8"

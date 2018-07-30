@@ -1,7 +1,7 @@
 const crypto = require('crypto');
+const { SIGNING_SECRET } = require('../constants');
 
 const VERSION = 'v0';
-const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
 const verify = () => async (ctx, next) => {
   const request = ctx.request;
