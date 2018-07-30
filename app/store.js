@@ -79,6 +79,7 @@ const createMessageUpdater = messageID => async () => {
       channel: messageData.channelID,
     },
     {
+      text: messageData.title,
       attachments,
     }
   );
@@ -97,7 +98,7 @@ exports.updateMessage = async messageID => {
 
 exports.createLunch = async (
   messageID,
-  { lunch, userID, isDailylunch, channelID, messageTS }
+  { lunch, title, userID, isDailylunch, channelID, messageTS }
 ) => {
   const batch = db.batch();
   const messageRef = messagesCollection.doc(messageID);
@@ -107,6 +108,7 @@ exports.createLunch = async (
     messageID,
     userID,
     isClosed: false,
+    title,
     isDailylunch,
     createTimestamp,
     channelID,
