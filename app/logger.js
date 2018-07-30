@@ -26,20 +26,25 @@ const levels = [
   'info',
 ];
 
-levels.forEach((level) => {
-  const levelConfig = typeof level === 'string' ? {
-    method: level,
-    ...defaultConfig,
-  } : level;
+levels.forEach(level => {
+  const levelConfig =
+    typeof level === 'string'
+      ? {
+          method: level,
+          ...defaultConfig,
+        }
+      : level;
 
   logger[levelConfig.method] = (label, data) => {
     console.log(
-      chalk`{${levelConfig.color} ${levelConfig.format(label)}}`
+      chalk`{${levelConfig.color} ${levelConfig.format(label)}}  {dim ${
+        data
+          ? Object.entries(data)
+              .map(entry => entry.join(': '))
+              .join(', ')
+          : ''
+      }}`
     );
-
-    if (data) {
-      console.log(JSON.stringify(data, null, 2));
-    }
   };
 });
 

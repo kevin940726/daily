@@ -51,7 +51,7 @@ const button = async ctx => {
   const {
     actions: [{ value: action }],
     callback_id: callbackID,
-    user: { id: userID },
+    user: { id: userID, name: userName },
     original_message: originalMessage,
     response_url: responseURL,
   } = body;
@@ -68,6 +68,7 @@ const button = async ctx => {
 
   logger.log('/button', {
     userID,
+    userName,
     lunchID,
     messageID,
     action,
@@ -110,6 +111,7 @@ const button = async ctx => {
    */
   const isSuccess = await orderLunch(lunchID, {
     userID,
+    userName,
     action,
   });
 

@@ -14,12 +14,18 @@ const alphabets = url.replace('~', '-');
 const nanoID = () => generate(alphabets, 16);
 
 exports.create = async ctx => {
-  const { trigger_id: triggerID, user_id: userID, text } = ctx.request.body;
+  const {
+    trigger_id: triggerID,
+    user_id: userID,
+    user_name: userName,
+    text,
+  } = ctx.request.body;
 
   const messageID = nanoID();
 
   logger.log('/create', {
     userID,
+    userName,
     messageID,
     triggerID,
     text,
@@ -75,7 +81,7 @@ exports.submitDialog = async ctx => {
   const body = JSON.parse(ctx.request.body.payload);
 
   const {
-    user: { id: userID },
+    user: { id: userID, name: userName },
     channel: { id: channelID },
     callback_id: callbackID,
     submission,
@@ -101,6 +107,7 @@ exports.submitDialog = async ctx => {
 
   logger.log('/dialog', {
     userID,
+    userName,
     channelID,
     messageID,
     title,
@@ -126,6 +133,7 @@ exports.submitDialog = async ctx => {
         lunch: lunches,
         title,
         userID,
+        userName,
         isDailylunch,
         channelID,
         messageTS: response.message.ts,

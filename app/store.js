@@ -98,7 +98,7 @@ exports.updateMessage = async messageID => {
 
 exports.createLunch = async (
   messageID,
-  { lunch, title, userID, isDailylunch, channelID, messageTS }
+  { lunch, title, userID, userName, isDailylunch, channelID, messageTS }
 ) => {
   const batch = db.batch();
   const messageRef = messagesCollection.doc(messageID);
@@ -107,6 +107,7 @@ exports.createLunch = async (
   const messageData = {
     messageID,
     userID,
+    userName,
     isClosed: false,
     title,
     isDailylunch,
@@ -153,7 +154,7 @@ exports.createLunch = async (
   return batch.commit();
 };
 
-exports.orderLunch = async (lunchID, { userID, action }) => {
+exports.orderLunch = async (lunchID, { userID, userName, action }) => {
   const lunchRef = lunchCollection.doc(lunchID);
   const userRef = lunchRef.collection('users').doc(userID);
 
@@ -198,6 +199,7 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
       } else {
         await t.set(dailylunchUserRef, {
           totalPrice,
+          userName,
         });
       }
     }
@@ -205,6 +207,7 @@ exports.orderLunch = async (lunchID, { userID, action }) => {
     if (!userData) {
       await t.set(userRef, {
         userID,
+        userName,
         count: nextCount,
         createTimestamp: updateTimestamp,
         updateTimestamp,
