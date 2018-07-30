@@ -109,7 +109,8 @@ const button = async ctx => {
   /**
    * usual user click on plus button
    */
-  const isSuccess = await orderLunch(lunchID, {
+  const isSuccess = await orderLunch(messageID, {
+    lunchID,
     userID,
     userName,
     action,

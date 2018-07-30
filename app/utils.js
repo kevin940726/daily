@@ -50,13 +50,13 @@ exports.buildCloseAction = (messageID, isClosed) => ({
 
 exports.getLunch = (lunchList, exceedUsers = {}) =>
   lunchList.map(lunch => {
-    const users = Object.values(lunch.users);
+    const orders = Object.values(lunch.orders);
 
     return {
       name: lunch.name,
       lunchID: lunch.lunchID,
       price: lunch.price,
-      text: users
+      text: orders
         .sort((a, b) => a.updateTimestamp - b.updateTimestamp)
         .filter(u => u.count > 0)
         .map(
@@ -66,7 +66,7 @@ exports.getLunch = (lunchList, exceedUsers = {}) =>
             }`
         )
         .join(', '),
-      total: users.map(u => u.count).reduce((sum, cur) => sum + cur, 0),
+      total: orders.map(u => u.count).reduce((sum, cur) => sum + cur, 0),
     };
   });
 

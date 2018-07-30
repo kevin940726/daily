@@ -1,5 +1,9 @@
 const admin = require('firebase-admin');
-const { DAILYLUNCH_MAX_PRICE, CLOSE_USER_WHITE_LIST } = require('./constants');
+const {
+  DAILYLUNCH_MAX_PRICE,
+  CLOSE_USER_WHITE_LIST,
+  SLACK_ENV,
+} = require('./constants');
 const { updateChat } = require('./slack');
 const {
   getLunch,
@@ -48,28 +52,22 @@ admin.initializeApp({
  */
 const db = admin.firestore();
 
-const lunchCollection = db.collection('lunch');
-const messagesCollection = db.collection('messages');
-const dailylunchCollection = db.collection('dailylunch');
+const envDoc = db.collection('env').doc(SLACK_ENV);
+const messagesCollection = envDoc.collection('messages');
+const dailylunchCollection = envDoc.collection('dailylunch');
 
 const updateQueue = new Map();
 
 const createMessageUpdater = messageID => async () => {
-  const [messageDoc, messageLunch] = await Promise.all([
-    messagesCollection.doc(messageID).get(),
-    exports.getMessageLunch(messageID),
-  ]);
+  const messageData = await exports.getMessageLunch(messageID);
 
-  const messageData = messageDoc.data();
   const isClosed = messageData.isClosed;
 
-  const lunchOrder = messageData.lunch;
-  const nextLunchList = lunchOrder.map(launchID =>
-    messageLunch.find(lunch => lunch.lunchID === launchID)
+  const lunchList = getLunch(
+    Object.values(messageData.lunch).sort((a, b) => a.index - b.index)
   );
-  const lunches = getLunch(nextLunchList);
 
-  const attachments = buildAttachments(lunches, { isClosed }).concat(
+  const attachments = buildAttachments(lunchList, { isClosed }).concat(
     buildCloseAction(messageID, isClosed)
   );
 
@@ -114,7 +112,22 @@ exports.createLunch = async (
     createTimestamp,
     channelID,
     messageTS,
-    lunch: lunch.map(l => l.lunchID),
+    lunch: lunch.reduce(
+      (map, l, index) => ({
+        ...map,
+        [l.lunchID]: {
+          lunchID: l.lunchID,
+          index,
+          messageID,
+          createTimestamp,
+          isDailylunch,
+          name: l.name,
+          price: l.price,
+          orders: {},
+        },
+      }),
+      {}
+    ),
   };
 
   batch.set(messageRef, messageData);
@@ -122,14 +135,15 @@ exports.createLunch = async (
   if (isDailylunch) {
     const dayKey = getDayKey(createTimestamp);
     const dailylunchRef = dailylunchCollection.doc(dayKey);
-    const dailylunchDoc = await dailylunchRef.get();
+    const dailylunchSnapshot = await dailylunchRef.get();
 
-    if (!dailylunchDoc.exists) {
+    if (!dailylunchSnapshot.exists) {
       batch.set(dailylunchRef, {
         day: dayKey,
         messages: {
           [messageID]: createTimestamp,
         },
+        users: {},
       });
     } else {
       batch.update(dailylunchRef, {
@@ -138,33 +152,23 @@ exports.createLunch = async (
     }
   }
 
-  lunch.forEach(l => {
-    const lunchData = {
-      lunchID: l.lunchID,
-      messageID,
-      createTimestamp,
-      isDailylunch,
-      name: l.name,
-      price: l.price,
-    };
-
-    batch.set(lunchCollection.doc(l.lunchID), lunchData);
-  });
-
   return batch.commit();
 };
 
-exports.orderLunch = async (lunchID, { userID, userName, action }) => {
-  const lunchRef = lunchCollection.doc(lunchID);
-  const userRef = lunchRef.collection('users').doc(userID);
+exports.orderLunch = async (
+  messageID,
+  { lunchID, userID, userName, action }
+) => {
+  const messageRef = messagesCollection.doc(messageID);
 
   return db.runTransaction(async t => {
-    const doc = await t.get(lunchRef);
+    const messageSnapshot = await t.get(messageRef);
+    const messageData = messageSnapshot.data();
     const delta = action === 'minus' ? -1 : 1;
     const updateTimestamp = admin.firestore.FieldValue.serverTimestamp();
-    const lunchData = doc.data();
-    const userDoc = await userRef.get();
-    const userData = userDoc.exists && userDoc.data();
+
+    const lunchData = messageData.lunch[lunchID];
+    const userData = lunchData.orders[userID];
 
     const count = (userData && userData.count) || 0;
     const nextCount = Math.max(count + delta, 0);
@@ -173,15 +177,13 @@ exports.orderLunch = async (lunchID, { userID, userName, action }) => {
     if (lunchData.isDailylunch) {
       const createTimestamp = lunchData.createTimestamp;
       const dayKey = getDayKey(createTimestamp);
-      const dailylunchRef = dailylunchCollection.doc(dayKey);
-      const dailylunchUsersCollection = dailylunchRef.collection('users');
-      const dailylunchUserRef = dailylunchUsersCollection.doc(userID);
-      const dailylunchUserSnapshot = await dailylunchUserRef.get();
+      const dailylunchSnapshot = await dailylunchCollection.doc(dayKey).get();
+      const dailylunchData =
+        dailylunchSnapshot.exists && dailylunchSnapshot.data();
 
-      const currentPrice =
-        (dailylunchUserSnapshot.exists &&
-          dailylunchUserSnapshot.get('totalPrice')) ||
-        0;
+      const userData = dailylunchData && dailylunchData.users[userID];
+
+      const currentPrice = (userData && userData.totalPrice) || 0;
       const totalPrice = Math.max(currentPrice + deltaPrice, 0);
 
       if (
@@ -192,63 +194,32 @@ exports.orderLunch = async (lunchID, { userID, userName, action }) => {
         return false;
       }
 
-      if (dailylunchUserSnapshot.exists) {
-        await t.update(dailylunchUserRef, {
-          totalPrice,
-        });
-      } else {
-        await t.set(dailylunchUserRef, {
-          totalPrice,
+      await t.update(dailylunchSnapshot.ref, {
+        [`users.${userID}`]: {
+          userID,
           userName,
-        });
-      }
+          totalPrice,
+        },
+      });
     }
 
-    if (!userData) {
-      await t.set(userRef, {
+    await t.update(messageRef, {
+      [`lunch.${lunchID}.orders.${userID}`]: {
         userID,
         userName,
         count: nextCount,
-        createTimestamp: updateTimestamp,
         updateTimestamp,
-      });
-    } else {
-      await t.update(userRef, {
-        count: nextCount,
-        updateTimestamp,
-      });
-    }
+      },
+    });
 
     return true;
   });
 };
 
 exports.getMessageLunch = async messageID => {
-  const messageLunchSnapshot = await lunchCollection
-    .where('messageID', '==', messageID)
-    .get();
+  const messageSnapshot = await messagesCollection.doc(messageID).get();
 
-  const messageLunch = [];
-  messageLunchSnapshot.forEach(doc => {
-    messageLunch.push(doc);
-  });
-
-  return Promise.all(
-    messageLunch.map(async doc => {
-      const usersSnapshot = await doc.ref.collection('users').get();
-
-      const users = {};
-
-      usersSnapshot.forEach(userDoc => {
-        users[userDoc.id] = userDoc.data();
-      });
-
-      return {
-        ...doc.data(),
-        users,
-      };
-    })
-  );
+  return messageSnapshot.data();
 };
 
 exports.setMessageClose = async (messageID, isClosed) => {

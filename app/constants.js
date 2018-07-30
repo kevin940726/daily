@@ -12,14 +12,14 @@ exports.PRICE_REGEX = /[$|＄]([\d.]+)/;
 exports.DAILYLUNCH_MAX_PRICE = 150;
 
 // slack env
-const SLACK_ENV = process.env.SLACK_ENV || 'development';
+exports.SLACK_ENV = process.env.SLACK_ENV || 'development';
 
 exports.SIGNING_SECRET =
-  SLACK_ENV === 'development'
+  exports.SLACK_ENV === 'development'
     ? process.env.DEV_SIGNING_SECRET
     : process.env.SIGNING_SECRET;
 exports.SLACK_TOKEN =
-  SLACK_ENV === 'development'
+  exports.SLACK_ENV === 'development'
     ? process.env.DEV_SLACK_TOKEN
     : process.env.SLACK_TOKEN;
 
