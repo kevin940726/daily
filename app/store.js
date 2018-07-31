@@ -59,9 +59,10 @@ const messagesCollection = envDoc.collection('messages');
 const dailylunchCollection = envDoc.collection('dailylunch');
 
 const updateQueue = new Map();
+const messagesCache = new Map();
 
 const createMessageUpdater = messageID => async () => {
-  const messageData = await exports.getMessageLunch(messageID);
+  const messageData = await exports.getMessageData(messageID);
 
   const isClosed = messageData.isClosed;
 
@@ -164,90 +165,109 @@ exports.orderLunch = async (
 ) => {
   const messageRef = messagesCollection.doc(messageID);
 
-  return db.runTransaction(async t => {
-    const messageSnapshot = await t.get(messageRef);
-    const messageData = messageSnapshot.data();
-    const delta = action === 'minus' ? -1 : 1;
-    const updateTimestamp = admin.firestore.FieldValue.serverTimestamp();
+  return db
+    .runTransaction(async t => {
+      const messageSnapshot = await t.get(messageRef);
+      const messageData = messageSnapshot.data();
+      const delta = action === 'minus' ? -1 : 1;
+      const updateTimestamp = admin.firestore.FieldValue.serverTimestamp();
 
-    const lunchData = messageData.lunch[lunchID];
-    const userData = lunchData.orders[userID];
-    const totalCount = Object.values(lunchData.orders).reduce(
-      (sum, order) => sum + order.count,
-      0
-    );
+      const lunchData = messageData.lunch[lunchID];
+      const userData = lunchData.orders[userID];
+      const totalCount = Object.values(lunchData.orders).reduce(
+        (sum, order) => sum + order.count,
+        0
+      );
 
-    // exceed the lunch limit, 0 means no limit
-    if (lunchData.limit && delta === 1 && totalCount >= lunchData.limit) {
-      return Promise.reject(ERROR_EXCEED_LIMIT);
-    }
-
-    const count = (userData && userData.count) || 0;
-    const nextCount = Math.max(count + delta, 0);
-    const deltaPrice = (nextCount - count) * lunchData.price;
-
-    if (lunchData.isDailylunch) {
-      const createTimestamp = lunchData.createTimestamp;
-      const dayKey = getDayKey(createTimestamp);
-      const dailylunchSnapshot = await dailylunchCollection.doc(dayKey).get();
-      const dailylunchData =
-        dailylunchSnapshot.exists && dailylunchSnapshot.data();
-
-      const userData = dailylunchData && dailylunchData.users[userID];
-
-      const currentPrice = (userData && userData.totalPrice) || 0;
-      const totalPrice = Math.max(currentPrice + deltaPrice, 0);
-
-      if (
-        totalPrice > DAILYLUNCH_MAX_PRICE &&
-        // admin users can still order
-        !CLOSE_USER_WHITE_LIST.includes(userID)
-      ) {
-        return Promise.reject(ERROR_EXCEED_PRICE);
+      // exceed the lunch limit, 0 means no limit
+      if (lunchData.limit && delta === 1 && totalCount >= lunchData.limit) {
+        return Promise.reject(ERROR_EXCEED_LIMIT);
       }
 
-      await t.update(dailylunchSnapshot.ref, {
-        [`users.${userID}`]: {
+      const count = (userData && userData.count) || 0;
+      const nextCount = Math.max(count + delta, 0);
+      const deltaPrice = (nextCount - count) * lunchData.price;
+
+      if (lunchData.isDailylunch) {
+        const createTimestamp = lunchData.createTimestamp;
+        const dayKey = getDayKey(createTimestamp);
+        const dailylunchSnapshot = await dailylunchCollection.doc(dayKey).get();
+        const dailylunchData =
+          dailylunchSnapshot.exists && dailylunchSnapshot.data();
+
+        const userData = dailylunchData && dailylunchData.users[userID];
+
+        const currentPrice = (userData && userData.totalPrice) || 0;
+        const totalPrice = Math.max(currentPrice + deltaPrice, 0);
+
+        if (
+          totalPrice > DAILYLUNCH_MAX_PRICE &&
+          // admin users can still order
+          !CLOSE_USER_WHITE_LIST.includes(userID)
+        ) {
+          return Promise.reject(ERROR_EXCEED_PRICE);
+        }
+
+        await t.update(dailylunchSnapshot.ref, {
+          [`users.${userID}`]: {
+            userID,
+            userName,
+            totalPrice,
+          },
+        });
+      }
+
+      await t.update(messageRef, {
+        [`lunch.${lunchID}.orders.${userID}`]: {
           userID,
           userName,
-          totalPrice,
+          count: nextCount,
+          updateTimestamp,
         },
       });
-    }
 
-    await t.update(messageRef, {
-      [`lunch.${lunchID}.orders.${userID}`]: {
-        userID,
-        userName,
-        count: nextCount,
-        updateTimestamp,
-      },
+      return true;
+    })
+    .then(() => {
+      messagesCache.delete(messageID);
     });
-
-    return true;
-  });
 };
 
-exports.getMessageLunch = async messageID => {
+exports.getMessageData = async messageID => {
+  if (messagesCache.has(messageID)) {
+    return messagesCache.get(messageID);
+  }
+
   const messageSnapshot = await messagesCollection.doc(messageID).get();
 
-  return messageSnapshot.data();
+  if (!messageSnapshot.exists) {
+    messagesCache.delete(messageID);
+    return null;
+  }
+
+  const messageData = messageSnapshot.data();
+
+  messagesCache.set(messageID, messageData);
+
+  return messageData;
 };
 
 exports.setMessageClose = async (messageID, isClosed) => {
+  messagesCache.delete(messageID);
+
   return messagesCollection.doc(messageID).update({
     isClosed,
   });
 };
 
 exports.getMessageIsClosed = async messageID => {
-  const messageDoc = await messagesCollection.doc(messageID).get();
+  const messageData = await exports.getMessageData(messageID);
 
-  return !!(messageDoc.exists && messageDoc.data().isClosed);
+  return !!(messageData && messageData.isClosed);
 };
 
 exports.getMessageCreatorID = async messageID => {
-  const messageDoc = await messagesCollection.doc(messageID).get();
+  const messageData = await exports.getMessageData(messageID);
 
-  return messageDoc.exists && messageDoc.data().userID;
+  return messageData && messageData.userID;
 };
