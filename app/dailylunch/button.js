@@ -109,24 +109,29 @@ const button = async ctx => {
   /**
    * usual user click on plus button
    */
-  const isSuccess = await orderLunch(messageID, {
-    lunchID,
-    userID,
-    userName,
-    action,
-  });
+  try {
+    await orderLunch(messageID, {
+      lunchID,
+      userID,
+      userName,
+      action,
+    });
+  } catch (err) {
+    // predefined error
+    if (typeof err === 'string') {
+      return respondMessage(responseURL, {
+        response_type: 'ephemeral',
+        replace_original: false,
+        text: err,
+        color: 'warning',
+      });
+    }
+
+    return;
+  }
 
   ctx.status = 200;
   ctx.body = null;
-
-  if (!isSuccess) {
-    return respondMessage(responseURL, {
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: '🚫 You have exceeded your daily lunch quota!',
-      color: 'warning',
-    });
-  }
 
   updateMessage(messageID);
 };

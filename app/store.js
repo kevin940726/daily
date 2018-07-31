@@ -3,6 +3,8 @@ const {
   DAILYLUNCH_MAX_PRICE,
   CLOSE_USER_WHITE_LIST,
   SLACK_ENV,
+  ERROR_EXCEED_LIMIT,
+  ERROR_EXCEED_PRICE,
 } = require('./constants');
 const { updateChat } = require('./slack');
 const {
@@ -123,6 +125,7 @@ exports.createLunch = async (
           isDailylunch,
           name: l.name,
           price: l.price,
+          limit: l.limit,
           orders: {},
         },
       }),
@@ -169,6 +172,15 @@ exports.orderLunch = async (
 
     const lunchData = messageData.lunch[lunchID];
     const userData = lunchData.orders[userID];
+    const totalCount = Object.values(lunchData.orders).reduce(
+      (sum, order) => sum + order.count,
+      0
+    );
+
+    // exceed the lunch limit, 0 means no limit
+    if (lunchData.limit && delta === 1 && totalCount >= lunchData.limit) {
+      return Promise.reject(ERROR_EXCEED_LIMIT);
+    }
 
     const count = (userData && userData.count) || 0;
     const nextCount = Math.max(count + delta, 0);
@@ -191,7 +203,7 @@ exports.orderLunch = async (
         // admin users can still order
         !CLOSE_USER_WHITE_LIST.includes(userID)
       ) {
-        return false;
+        return Promise.reject(ERROR_EXCEED_PRICE);
       }
 
       await t.update(dailylunchSnapshot.ref, {

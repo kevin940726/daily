@@ -2,6 +2,7 @@ const generate = require('nanoid/generate');
 const url = require('nanoid/url');
 const {
   PRICE_REGEX,
+  LIMIT_REGEX,
   CLOSE_USER_WHITE_LIST,
   CALLBACK_DIALOG,
 } = require('../constants');
@@ -102,6 +103,8 @@ exports.submitDialog = async ctx => {
       lunchID: nanoID(),
       name: lunch,
       price: parseFloat((lunch.match(PRICE_REGEX) || [])[1]) || 0,
+      limit: parseInt((lunch.match(LIMIT_REGEX) || [])[1], 10) || 0,
+      total: 0,
       index,
     }));
 

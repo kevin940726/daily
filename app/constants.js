@@ -7,9 +7,16 @@ exports.CLOSE_ACTION = 'close-order';
 exports.CLOSE_TEXT = '🚫 Close';
 exports.REOPEN_TEXT = '🚫 Reopen';
 
-exports.PRICE_REGEX = /[$|＄]([\d.]+)/;
+exports.PRICE_REGEX = /[$＄] *([\d.]+)/;
+exports.LIMIT_REGEX = /限量 *(\d+)/;
 
 exports.DAILYLUNCH_MAX_PRICE = 150;
+
+/**
+ * errors
+ */
+exports.ERROR_EXCEED_PRICE = '🚫 You have exceeded your daily lunch quota!';
+exports.ERROR_EXCEED_LIMIT = '🚫 The limit is reached!';
 
 // slack env
 exports.SLACK_ENV = process.env.SLACK_ENV || 'development';

@@ -18,7 +18,7 @@ exports.buildAttachments = (lunches, { isClosed } = {}) =>
     actions: isClosed
       ? null
       : [
-          {
+          lunch.total < lunch.limit && {
             name: lunch.lunchID,
             text: COUNT_EMOJI,
             type: 'button',
@@ -30,7 +30,7 @@ exports.buildAttachments = (lunches, { isClosed } = {}) =>
             type: 'button',
             value: 'minus',
           },
-        ],
+        ].filter(Boolean),
   }));
 
 exports.buildCloseAction = (messageID, isClosed) => ({
@@ -56,6 +56,7 @@ exports.getLunch = (lunchList, exceedUsers = {}) =>
       name: lunch.name,
       lunchID: lunch.lunchID,
       price: lunch.price,
+      limit: lunch.limit,
       text: orders
         .sort((a, b) => a.updateTimestamp - b.updateTimestamp)
         .filter(u => u.count > 0)
