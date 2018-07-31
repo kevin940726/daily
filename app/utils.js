@@ -11,7 +11,7 @@ const {
 
 exports.buildAttachments = (lunches, { isClosed } = {}) =>
   lunches.map(lunch => ({
-    title: isClosed ? `(${lunch.total}) ${lunch.name}` : lunch.name,
+    title: `(${lunch.total}) ${lunch.name}`,
     text: lunch.text,
     callback_id: `${CALLBACK_BUTTON}_${lunch.lunchID}`,
     color: MAIN_COLOR,
