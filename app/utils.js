@@ -18,7 +18,7 @@ exports.buildAttachments = (lunches, { isClosed } = {}) =>
     actions: isClosed
       ? null
       : [
-          lunch.total < lunch.limit && {
+          !(lunch.limit && lunch.total >= lunch.limit) && {
             name: lunch.lunchID,
             text: COUNT_EMOJI,
             type: 'button',
