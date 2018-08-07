@@ -93,7 +93,7 @@ exports.updateMessage = async (messageID, responseURL) => {
 
 exports.createLunch = async (
   messageID,
-  { lunch, title, userID, userName, isDailylunch, channelID, messageTS }
+  { lunch, title, userID, userName, isDailylunch, channelID }
 ) => {
   const batch = db.batch();
   const messageRef = messagesCollection.doc(messageID);
@@ -108,7 +108,6 @@ exports.createLunch = async (
     isDailylunch,
     createTimestamp,
     channelID,
-    messageTS,
     lunch: lunch.reduce(
       (map, l, index) => ({
         ...map,

@@ -137,7 +137,6 @@ exports.submitDialog = async ctx => {
         userName,
         isDailylunch,
         channelID,
-        messageTS: response.message.ts,
       });
     }
   });

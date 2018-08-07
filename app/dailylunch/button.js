@@ -4,8 +4,9 @@ const {
   getMessageIsClosed,
   getMessageCreatorID,
   setMessageClose,
+  updateMessage,
 } = require('../store');
-const { respondMessage, updateMessage } = require('../slack');
+const { respondMessage } = require('../slack');
 const {
   CLOSE_ACTION,
   CLOSE_USER_WHITE_LIST,
