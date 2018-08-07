@@ -9,7 +9,7 @@ const {
 const { createLunch } = require('../store');
 const logger = require('../logger');
 const { respondMessage, openDialog } = require('../slack');
-const { buildAttachments, buildCloseAction } = require('../utils');
+const { buildAttachments, buildCloseAction, boldTitle } = require('../utils');
 
 const alphabets = url.replace('~', '-');
 const nanoID = () => generate(alphabets, 16);
@@ -124,7 +124,7 @@ exports.submitDialog = async ctx => {
 
   respondMessage(responseURL, {
     response_type: 'in_channel',
-    text: title,
+    text: boldTitle(title),
     attachments: buildAttachments(lunches).concat(
       buildCloseAction(messageID, false)
     ),

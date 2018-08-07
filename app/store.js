@@ -12,6 +12,7 @@ const {
   buildAttachments,
   buildCloseAction,
   getDayKey,
+  boldTitle,
 } = require('./utils');
 
 const serviceAccount = JSON.parse(
@@ -75,7 +76,7 @@ const createMessageUpdater = (messageID, responseURL) => async () => {
   );
 
   return respondMessage(responseURL, {
-    text: messageData.title,
+    text: boldTitle(messageData.title),
     attachments,
   });
 };

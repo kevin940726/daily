@@ -82,3 +82,5 @@ exports.getDayKey = timestamp => {
     shiftedDate.getUTCDate(),
   ].join('-');
 };
+
+exports.boldTitle = title => `*${title}*`;
