@@ -6,7 +6,7 @@ const {
   ERROR_EXCEED_LIMIT,
   ERROR_EXCEED_PRICE,
 } = require('./constants');
-const { updateChat } = require('./slack');
+const { respondMessage } = require('./slack');
 const {
   getLunch,
   buildAttachments,
@@ -61,7 +61,7 @@ const dailylunchCollection = envDoc.collection('dailylunch');
 const updateQueue = new Map();
 const messagesCache = new Map();
 
-const createMessageUpdater = messageID => async () => {
+const createMessageUpdater = (messageID, responseURL) => async () => {
   const messageData = await exports.getMessageData(messageID);
 
   const isClosed = messageData.isClosed;
@@ -74,23 +74,17 @@ const createMessageUpdater = messageID => async () => {
     buildCloseAction(messageID, isClosed)
   );
 
-  return updateChat(
-    {
-      ts: messageData.messageTS,
-      channel: messageData.channelID,
-    },
-    {
-      text: messageData.title,
-      attachments,
-    }
-  );
+  return respondMessage(responseURL, {
+    text: messageData.title,
+    attachments,
+  });
 };
 
-exports.updateMessage = async messageID => {
+exports.updateMessage = async (messageID, responseURL) => {
   updateQueue.set(
     messageID,
     (updateQueue.get(messageID) || Promise.resolve()).then(
-      createMessageUpdater(messageID)
+      createMessageUpdater(messageID, responseURL)
     )
   );
 

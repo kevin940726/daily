@@ -22,19 +22,6 @@ exports.respondMessage = (responseURL, message) =>
     body: JSON.stringify(message),
   });
 
-exports.updateChat = ({ ts, channel }, message) =>
-  slackAPI('chat.update', {
-    ts,
-    channel,
-    ...message,
-  });
-
-exports.postChat = ({ channel }, message) =>
-  slackAPI('chat.postMessage', {
-    channel,
-    ...message,
-  });
-
 exports.openDialog = (triggerID, dialog) =>
   slackAPI('dialog.open', {
     trigger_id: triggerID,

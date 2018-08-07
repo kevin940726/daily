@@ -4,9 +4,8 @@ const {
   getMessageIsClosed,
   getMessageCreatorID,
   setMessageClose,
-  updateMessage,
 } = require('../store');
-const { respondMessage } = require('../slack');
+const { respondMessage, updateMessage } = require('../slack');
 const {
   CLOSE_ACTION,
   CLOSE_USER_WHITE_LIST,
@@ -42,7 +41,7 @@ const handleCloseAction = async (
   ctx.status = 200;
   ctx.body = null;
 
-  updateMessage(messageID);
+  updateMessage(messageID, responseURL);
 };
 
 const button = async ctx => {
@@ -133,7 +132,7 @@ const button = async ctx => {
   ctx.status = 200;
   ctx.body = null;
 
-  updateMessage(messageID);
+  updateMessage(messageID, responseURL);
 };
 
 module.exports = button;

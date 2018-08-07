@@ -8,7 +8,7 @@ const {
 } = require('../constants');
 const { createLunch } = require('../store');
 const logger = require('../logger');
-const { postChat, openDialog } = require('../slack');
+const { respondMessage, openDialog } = require('../slack');
 const { buildAttachments, buildCloseAction } = require('../utils');
 
 const alphabets = url.replace('~', '-');
@@ -86,6 +86,7 @@ exports.submitDialog = async ctx => {
     channel: { id: channelID },
     callback_id: callbackID,
     submission,
+    response_url: responseURL,
   } = body;
 
   const messageID = callbackID.replace(`${CALLBACK_DIALOG}_`, '');
@@ -121,16 +122,13 @@ exports.submitDialog = async ctx => {
   ctx.status = 200;
   ctx.body = null;
 
-  postChat(
-    { channel: channelID },
-    {
-      response_type: 'in_channel',
-      text: title,
-      attachments: buildAttachments(lunches).concat(
-        buildCloseAction(messageID, false)
-      ),
-    }
-  ).then(response => {
+  respondMessage(responseURL, {
+    response_type: 'in_channel',
+    text: title,
+    attachments: buildAttachments(lunches).concat(
+      buildCloseAction(messageID, false)
+    ),
+  }).then(response => {
     if (response && response.ok) {
       createLunch(messageID, {
         lunch: lunches,
