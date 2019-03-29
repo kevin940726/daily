@@ -23,11 +23,15 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+const FieldValue = admin.firestore.FieldValue;
+
 const db = admin.firestore();
 
 const envDoc = db.collection('env').doc(SLACK_ENV);
 const messagesCollection = envDoc.collection('messages');
 const dailylunchCollection = envDoc.collection('dailylunch');
+const storesCollection = envDoc.collection('stores');
+const dailydrinkCollection = envDoc.collection('dailydrink');
 
 const updateQueue = new Map();
 
@@ -220,4 +224,154 @@ exports.getMessageCreatorID = async messageID => {
   const messageData = await exports.getMessageData(messageID);
 
   return messageData && messageData.userID;
+};
+
+/**
+ * dailydrink
+ */
+
+// storeID is equal to storeName for simplicity
+exports.submitNewStore = async (
+  storeID,
+  { storeName, imageURL, userID, userName }
+) => {
+  const storesRef = storesCollection.doc('stores');
+
+  const storesSnapshot = await storesRef.get();
+
+  if (!storesSnapshot.exists) {
+    await storesRef.set({});
+  }
+
+  return storesRef.update({
+    [storeID]: {
+      storeName,
+      imageURL,
+      userID,
+      userName,
+    },
+  });
+};
+
+exports.getAllStores = async () => {
+  const storesSnapshot = await storesCollection.doc('stores').get();
+
+  if (!storesSnapshot.exists) {
+    return [];
+  }
+
+  const storesData = storesSnapshot.data();
+
+  return Object.keys(storesData);
+};
+
+exports.getStoreData = async storeID => {
+  const storesSnapshot = await storesCollection.doc('stores').get();
+
+  if (!storesSnapshot.exists) {
+    return [];
+  }
+
+  const storesData = storesSnapshot.data();
+
+  return storesData[storeID];
+};
+
+exports.createDrinkOrder = async (
+  messageID,
+  { channelID, title, userID, userName, store }
+) => {
+  const messageRef = dailydrinkCollection.doc(messageID);
+  const createTimestamp = Date.now();
+
+  const messageData = {
+    messageID,
+    channelID,
+    isClosed: false,
+    orders: {},
+    title,
+    userID,
+    userName,
+    store,
+    createTimestamp,
+  };
+
+  return messageRef.set(messageData);
+};
+
+exports.setOrder = async (
+  orderID,
+  {
+    messageID,
+    orderName,
+    size,
+    ice,
+    sugar,
+    ingredients,
+    price,
+    userID,
+    userName,
+  }
+) => {
+  const messageRef = dailydrinkCollection.doc(messageID);
+  const updateTimestamp = Date.now();
+
+  return messageRef.update({
+    [`orders.${orderID}`]: {
+      orderID,
+      orderName,
+      size,
+      ice,
+      sugar,
+      ingredients,
+      price,
+      userID,
+      userName,
+      updateTimestamp,
+    },
+  });
+};
+
+exports.getDrinkOrderData = async messageID => {
+  const messageSnapshot = await dailydrinkCollection.doc(messageID).get();
+
+  if (!messageSnapshot.exists) {
+    return null;
+  }
+
+  const messageData = messageSnapshot.data();
+
+  return messageData;
+};
+
+exports.removeOrder = async (orderID, messageID, userID) => {
+  const messageRef = dailydrinkCollection.doc(messageID);
+  const messageData = await exports.getDrinkOrderData(messageID);
+  const orderData = messageData.orders[orderID];
+
+  if (!orderData) {
+    return;
+  }
+
+  if (orderData.userID !== userID) {
+    return Promise.reject('permission denied');
+  }
+
+  return messageRef.update({
+    [`orders.${orderID}`]: FieldValue.delete(),
+  });
+};
+
+exports.setDrinkIsClosed = async (messageID, userID, isClosed) => {
+  const messageRef = dailydrinkCollection.doc(messageID);
+
+  const messageData = await exports.getDrinkOrderData(messageID);
+
+  if (userID !== messageData.userID) {
+    return Promise.reject('permission denied');
+  }
+
+  return messageRef.update({
+    isClosed,
+  });
 };

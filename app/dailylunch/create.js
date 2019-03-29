@@ -1,5 +1,3 @@
-const generate = require('nanoid/generate');
-const url = require('nanoid/url');
 const {
   PRICE_REGEX,
   LIMIT_REGEX,
@@ -9,10 +7,12 @@ const {
 const { createLunch } = require('../store');
 const logger = require('../logger');
 const { respondMessage, openDialog } = require('../slack');
-const { buildAttachments, buildCloseAction, boldTitle } = require('../utils');
-
-const alphabets = url.replace('~', '-');
-const nanoID = () => generate(alphabets, 16);
+const {
+  buildAttachments,
+  buildCloseAction,
+  boldTitle,
+  nanoID,
+} = require('../utils');
 
 exports.create = async ctx => {
   const {
