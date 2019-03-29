@@ -4,9 +4,9 @@ const dailydrinkOptions = require('../dailydrink/options');
 const options = async ctx => {
   const { body } = ctx.state;
 
-  const { action_id: actionID } = body;
+  const { name } = body;
 
-  switch (actionID) {
+  switch (name) {
     case CHOOSE_STORE_SELECT:
       return dailydrinkOptions(ctx);
     default: {

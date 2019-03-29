@@ -3,7 +3,7 @@ const { ORDER_DRINK_DIALOG_CALLBACK_ID } = require('../constants');
 const OrderDialog = ({ state, fields = {}, isEdit = false }) => ({
   callback_id: ORDER_DRINK_DIALOG_CALLBACK_ID,
   title: isEdit ? 'Edit your order' : 'Order your drink',
-  submit_label: isEdit ? 'Edit' : 'Order',
+  submit_label: isEdit ? 'Save' : 'Order',
   notify_on_cancel: false,
   state: JSON.stringify(state),
   elements: [

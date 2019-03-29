@@ -5,7 +5,7 @@ const updateMessage = require('./updateMessage');
 const { ORDER_OVERFLOW_BLOCK_ID } = require('./constants');
 
 const handleRemoveOrder = async ctx => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const {
     actions: [{ action_id: messageID, block_id: blockID }],
@@ -23,7 +23,7 @@ const handleRemoveOrder = async ctx => {
 };
 
 const handleEditOrder = async ctx => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const {
     actions: [{ action_id: messageID, block_id: blockID }],
@@ -64,7 +64,7 @@ const handleEditOrder = async ctx => {
 };
 
 module.exports = async ctx => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const { actions } = body;
 

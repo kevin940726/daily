@@ -277,26 +277,34 @@ exports.getStoreData = async storeID => {
   return storesData[storeID];
 };
 
-exports.createDrinkOrder = async (
+exports.setDrinkOrder = async (
   messageID,
   { channelID, title, userID, userName, store }
 ) => {
   const messageRef = dailydrinkCollection.doc(messageID);
-  const createTimestamp = Date.now();
+  const updateTimestamp = Date.now();
 
-  const messageData = {
-    messageID,
-    channelID,
-    isClosed: false,
-    orders: {},
+  const messageSnapshot = await messageRef.get();
+
+  const payload = {
     title,
-    userID,
-    userName,
     store,
-    createTimestamp,
+    updateTimestamp,
   };
 
-  return messageRef.set(messageData);
+  if (!messageSnapshot.exists) {
+    return messageRef.set({
+      ...payload,
+      messageID,
+      channelID,
+      userID,
+      userName,
+      isClosed: false,
+      orders: {},
+    });
+  }
+
+  return messageRef.update(payload);
 };
 
 exports.setOrder = async (

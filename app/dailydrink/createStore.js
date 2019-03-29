@@ -1,7 +1,7 @@
 const { submitNewStore } = require('../store');
 
 exports.handleSubmitNewStore = async ctx => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const { submission, user } = body;
 

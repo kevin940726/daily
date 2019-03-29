@@ -1,4 +1,6 @@
-const CreateDrink = require('./components/CreateDrink');
+const { openDialog } = require('../slack');
+const DrinkDialog = require('./components/DrinkDialog');
+const StoreDialog = require('./components/StoreDialog');
 const logger = require('../logger');
 
 exports.create = async ctx => {
@@ -17,8 +19,12 @@ exports.create = async ctx => {
   });
 
   ctx.status = 200;
-  ctx.body = {
-    response_type: 'ephemeral',
-    blocks: CreateDrink(),
-  };
+  ctx.body = null;
+
+  if (text.trim() === 'submit') {
+    openDialog(triggerID, StoreDialog({}));
+    return;
+  }
+
+  openDialog(triggerID, DrinkDialog({}));
 };

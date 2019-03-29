@@ -10,6 +10,7 @@ module.exports = async (messageID, responseURL) => {
   );
 
   return respondMessage(responseURL, {
+    response_type: 'in_channel',
     blocks: Drink(messageData),
   });
 };

@@ -1,22 +1,52 @@
 const { setDrinkIsClosed } = require('../store');
 const updateMessage = require('./updateMessage');
-const { DAILYDRINK_OVERFLOW_BLOCK_ID } = require('./constants');
+const DrinkDialog = require('./components/DrinkDialog');
+const { openDialog, throwError } = require('../slack');
+const { getDrinkOrderData } = require('../store');
 
 const handleSetDrinkIsClosed = async (ctx, isClosed) => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const {
-    actions: [{ block_id: blockID }],
+    actions: [{ action_id: messageID }],
     user: { id: userID },
     response_url: responseURL,
   } = body;
-  const messageID = blockID.replace(DAILYDRINK_OVERFLOW_BLOCK_ID, '').slice(1);
 
   ctx.status = 200;
   ctx.body = null;
 
   setDrinkIsClosed(messageID, userID, isClosed).then(() =>
     updateMessage(messageID, responseURL)
+  );
+};
+
+const handleEditDrink = async ctx => {
+  const { body } = ctx.state;
+
+  const {
+    actions: [{ action_id: messageID }],
+    user: { id: userID },
+    trigger_id: triggerID,
+  } = body;
+
+  ctx.status = 200;
+  ctx.body = null;
+
+  const messageData = await getDrinkOrderData(messageID);
+
+  if (messageData.userID !== userID) {
+    throwError('Permission denied: Owners only.');
+  }
+
+  const state = {
+    storeID: messageData.store.storeName,
+    messageID,
+  };
+
+  openDialog(
+    triggerID,
+    DrinkDialog({ isEdit: true, fields: messageData, state })
   );
 };
 
@@ -36,6 +66,8 @@ module.exports = async ctx => {
       return handleSetDrinkIsClosed(ctx, true);
     case 'reopen-order':
       return handleSetDrinkIsClosed(ctx, false);
+    case 'edit-order':
+      return handleEditDrink(ctx);
     default: {
       ctx.status = 200;
       ctx.body = null;

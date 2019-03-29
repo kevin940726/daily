@@ -19,7 +19,7 @@ const Drink = ({
       <Image src="${store.imageURL}" alt="${store.storeName}" />
       <Section blockId="${`${DAILYDRINK_OVERFLOW_BLOCK_ID}_${messageID}`}">
         <b>${title}</b>
-        <Overflow>
+        <Overflow actionId="${messageID}">
           <OverflowItem
             value="${isClosed ? 'reopen-order' : 'close-order'}"
           >
