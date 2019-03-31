@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it renders <Order /> 1`] = `
+Object {
+  "accessory": Object {
+    "action_id": "messageID",
+    "options": Array [
+      Object {
+        "text": Object {
+          "emoji": true,
+          "text": "Edit order",
+          "type": "plain_text",
+        },
+        "value": "edit-order",
+      },
+      Object {
+        "text": Object {
+          "emoji": true,
+          "text": "Remove order",
+          "type": "plain_text",
+        },
+        "value": "remove-order",
+      },
+    ],
+    "type": "overflow",
+  },
+  "block_id": "order-overflow-block-id_orderID",
+  "text": Object {
+    "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+    "type": "mrkdwn",
+  },
+  "type": "section",
+}
+`;
+
+exports[`it renders <Order /> with closed 1`] = `
+Object {
+  "accessory": false,
+  "block_id": "order-overflow-block-id_orderID",
+  "text": Object {
+    "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+    "type": "mrkdwn",
+  },
+  "type": "section",
+}
+`;

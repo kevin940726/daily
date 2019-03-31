@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it renders <Drink /> 1`] = `
+Array [
+  Object {
+    "alt_text": "storeName",
+    "image_url": "https://via.placeholder.com/150",
+    "type": "image",
+  },
+  Object {
+    "accessory": Object {
+      "action_id": "messageID",
+      "options": Array [
+        Object {
+          "text": Object {
+            "text": "Close order",
+            "type": "plain_text",
+          },
+          "value": "close-order",
+        },
+        Object {
+          "text": Object {
+            "text": "Edit Order",
+            "type": "plain_text",
+          },
+          "value": "edit-order",
+        },
+      ],
+      "type": "overflow",
+    },
+    "block_id": "dailydrink-overflow-block-id_messageID",
+    "text": Object {
+      "text": "*title*",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "elements": Array [
+      Object {
+        "text": "storeName   _by <@userID>_",
+        "type": "mrkdwn",
+      },
+    ],
+    "type": "context",
+  },
+  Object {
+    "type": "divider",
+  },
+  Object {
+    "accessory": Object {
+      "action_id": "messageID",
+      "options": Array [
+        Object {
+          "text": Object {
+            "emoji": true,
+            "text": "Edit order",
+            "type": "plain_text",
+          },
+          "value": "edit-order",
+        },
+        Object {
+          "text": Object {
+            "emoji": true,
+            "text": "Remove order",
+            "type": "plain_text",
+          },
+          "value": "remove-order",
+        },
+      ],
+      "type": "overflow",
+    },
+    "block_id": "order-overflow-block-id_orderID",
+    "text": Object {
+      "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "accessory": Object {
+      "action_id": "messageID",
+      "options": Array [
+        Object {
+          "text": Object {
+            "emoji": true,
+            "text": "Edit order",
+            "type": "plain_text",
+          },
+          "value": "edit-order",
+        },
+        Object {
+          "text": Object {
+            "emoji": true,
+            "text": "Remove order",
+            "type": "plain_text",
+          },
+          "value": "remove-order",
+        },
+      ],
+      "type": "overflow",
+    },
+    "block_id": "order-overflow-block-id_orderID2",
+    "text": Object {
+      "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "type": "divider",
+  },
+  Object {
+    "fields": Array [
+      Object {
+        "text": "*Total Count*
+2",
+        "type": "mrkdwn",
+      },
+      Object {
+        "text": "*Total Price*
+$100",
+        "type": "mrkdwn",
+      },
+    ],
+    "type": "section",
+  },
+  Object {
+    "block_id": "order-drink-block_messageID",
+    "elements": Array [
+      Object {
+        "action_id": "order-drink",
+        "text": Object {
+          "emoji": undefined,
+          "text": "Order drink",
+          "type": "plain_text",
+        },
+        "type": "button",
+      },
+    ],
+    "type": "actions",
+  },
+]
+`;
+
+exports[`it renders <Drink /> with closed 1`] = `
+Array [
+  Object {
+    "alt_text": "storeName",
+    "image_url": "https://via.placeholder.com/150",
+    "type": "image",
+  },
+  Object {
+    "accessory": Object {
+      "action_id": "messageID",
+      "options": Array [
+        Object {
+          "text": Object {
+            "text": "Reopen Order",
+            "type": "plain_text",
+          },
+          "value": "reopen-order",
+        },
+        Object {
+          "text": Object {
+            "text": "Edit Order",
+            "type": "plain_text",
+          },
+          "value": "edit-order",
+        },
+      ],
+      "type": "overflow",
+    },
+    "block_id": "dailydrink-overflow-block-id_messageID",
+    "text": Object {
+      "text": "*title*",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "elements": Array [
+      Object {
+        "text": "storeName   _by <@userID>_",
+        "type": "mrkdwn",
+      },
+    ],
+    "type": "context",
+  },
+  Object {
+    "type": "divider",
+  },
+  Object {
+    "accessory": false,
+    "block_id": "order-overflow-block-id_orderID",
+    "text": Object {
+      "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "accessory": false,
+    "block_id": "order-overflow-block-id_orderID2",
+    "text": Object {
+      "text": "<@userID>: *orderName*  (*$50*)
+L, Ice-free, Sugar-free, (ingredients)",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "type": "divider",
+  },
+  Object {
+    "fields": Array [
+      Object {
+        "text": "*Total Count*
+2",
+        "type": "mrkdwn",
+      },
+      Object {
+        "text": "*Total Price*
+$100",
+        "type": "mrkdwn",
+      },
+    ],
+    "type": "section",
+  },
+  false,
+]
+`;

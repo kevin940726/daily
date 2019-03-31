@@ -1,0 +1,231 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it renders <OrderDialog /> 1`] = `
+Object {
+  "callback_id": "order-drink-dialog-callback-id",
+  "elements": Array [
+    Object {
+      "label": "Order Name",
+      "name": "orderName",
+      "type": "text",
+      "value": undefined,
+    },
+    Object {
+      "label": "Size",
+      "name": "size",
+      "options": Array [
+        Array [
+          Object {
+            "label": "S",
+            "value": "s",
+          },
+          Object {
+            "label": "M",
+            "value": "m",
+          },
+          Object {
+            "label": "L",
+            "value": "l",
+          },
+          Object {
+            "label": "XL",
+            "value": "xl",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "l",
+    },
+    Object {
+      "label": "Ice",
+      "name": "ice",
+      "options": Array [
+        Array [
+          Object {
+            "label": "Regular Ice",
+            "value": "regular",
+          },
+          Object {
+            "label": "Easy Ice",
+            "value": "easy",
+          },
+          Object {
+            "label": "Ice-free",
+            "value": "free",
+          },
+          Object {
+            "label": "Hot",
+            "value": "hot",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "free",
+    },
+    Object {
+      "label": "Sugar",
+      "name": "sugar",
+      "options": Array [
+        Array [
+          Object {
+            "label": "Regular Sugar",
+            "value": "regular",
+          },
+          Object {
+            "label": "Less Sugar",
+            "value": "less",
+          },
+          Object {
+            "label": "Half Sugar",
+            "value": "half",
+          },
+          Object {
+            "label": "Quarter Sugar",
+            "value": "quarter",
+          },
+          Object {
+            "label": "Sugar-free",
+            "value": "free",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "free",
+    },
+    Object {
+      "hint": "Or any additional note",
+      "label": "Ingredients",
+      "name": "ingredients",
+      "optional": true,
+      "type": "text",
+      "value": undefined,
+    },
+    Object {
+      "label": "Total Price",
+      "name": "price",
+      "subtype": "number",
+      "type": "text",
+      "value": undefined,
+    },
+  ],
+  "notify_on_cancel": false,
+  "state": "{\\"foo\\":\\"bar\\"}",
+  "submit_label": "Order",
+  "title": "Order your drink",
+}
+`;
+
+exports[`it renders <OrderDialog /> with editing 1`] = `
+Object {
+  "callback_id": "order-drink-dialog-callback-id",
+  "elements": Array [
+    Object {
+      "label": "Order Name",
+      "name": "orderName",
+      "type": "text",
+      "value": "orderName",
+    },
+    Object {
+      "label": "Size",
+      "name": "size",
+      "options": Array [
+        Array [
+          Object {
+            "label": "S",
+            "value": "s",
+          },
+          Object {
+            "label": "M",
+            "value": "m",
+          },
+          Object {
+            "label": "L",
+            "value": "l",
+          },
+          Object {
+            "label": "XL",
+            "value": "xl",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "xl",
+    },
+    Object {
+      "label": "Ice",
+      "name": "ice",
+      "options": Array [
+        Array [
+          Object {
+            "label": "Regular Ice",
+            "value": "regular",
+          },
+          Object {
+            "label": "Easy Ice",
+            "value": "easy",
+          },
+          Object {
+            "label": "Ice-free",
+            "value": "free",
+          },
+          Object {
+            "label": "Hot",
+            "value": "hot",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "regular",
+    },
+    Object {
+      "label": "Sugar",
+      "name": "sugar",
+      "options": Array [
+        Array [
+          Object {
+            "label": "Regular Sugar",
+            "value": "regular",
+          },
+          Object {
+            "label": "Less Sugar",
+            "value": "less",
+          },
+          Object {
+            "label": "Half Sugar",
+            "value": "half",
+          },
+          Object {
+            "label": "Quarter Sugar",
+            "value": "quarter",
+          },
+          Object {
+            "label": "Sugar-free",
+            "value": "free",
+          },
+        ],
+      ],
+      "type": "select",
+      "value": "half",
+    },
+    Object {
+      "hint": "Or any additional note",
+      "label": "Ingredients",
+      "name": "ingredients",
+      "optional": true,
+      "type": "text",
+      "value": "ingredients",
+    },
+    Object {
+      "label": "Total Price",
+      "name": "price",
+      "subtype": "number",
+      "type": "text",
+      "value": 50,
+    },
+  ],
+  "notify_on_cancel": false,
+  "state": "{\\"foo\\":\\"bar\\"}",
+  "submit_label": "Save",
+  "title": "Edit your order",
+}
+`;

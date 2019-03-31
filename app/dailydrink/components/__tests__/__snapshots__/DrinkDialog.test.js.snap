@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it renders <DrinkDialog /> 1`] = `
+Object {
+  "callback_id": "create-new-order-callback-id",
+  "elements": Array [
+    Object {
+      "data_source": "external",
+      "hint": "Cannot find the store you are looking for? Try submit a new store via \`/dailydrink submit\`",
+      "label": "Store",
+      "name": "select-store",
+      "selected_options": undefined,
+      "type": "select",
+    },
+    Object {
+      "hint": "Provide estimated due time if needed.",
+      "label": "Title",
+      "name": "title",
+      "optional": true,
+      "type": "text",
+      "value": undefined,
+    },
+    false,
+  ],
+  "notify_on_cancel": false,
+  "state": "{\\"foo\\":\\"bar\\"}",
+  "submit_label": "Start",
+  "title": "Start a new order",
+}
+`;
+
+exports[`it renders <DrinkDialog /> with editing 1`] = `
+Object {
+  "callback_id": "create-new-order-callback-id",
+  "elements": Array [
+    Object {
+      "data_source": "external",
+      "hint": "Cannot find the store you are looking for? Try submit a new store via \`/dailydrink submit\`",
+      "label": "Store",
+      "name": "select-store",
+      "selected_options": Array [
+        Object {
+          "label": "storeName",
+          "value": "storeName",
+        },
+      ],
+      "type": "select",
+    },
+    Object {
+      "hint": "Provide estimated due time if needed.",
+      "label": "Title",
+      "name": "title",
+      "optional": true,
+      "type": "text",
+      "value": "title",
+    },
+    false,
+  ],
+  "notify_on_cancel": false,
+  "state": "{\\"foo\\":\\"bar\\"}",
+  "submit_label": "Save",
+  "title": "Edit your order",
+}
+`;

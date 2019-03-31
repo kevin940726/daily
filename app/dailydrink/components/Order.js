@@ -1,44 +1,43 @@
+const {
+  html,
+  Overflow,
+  Option,
+  Mrkdwn,
+  User,
+} = require('../../slack-block-kit');
 const { ORDER_OVERFLOW_BLOCK_ID } = require('../constants');
 const { mapSizeToLabel, mapIceToLabel, mapSugarToLabel } = require('../utils');
 
-const Order = ({ order, messageID, isClosed }) => ({
-  type: 'section',
-  block_id: `${ORDER_OVERFLOW_BLOCK_ID}_${order.orderID}`,
-  text: {
-    type: 'mrkdwn',
-    text: `<@${order.userID}>: *${order.orderName}*  (*$${order.price}*)\n${[
-      mapSizeToLabel(order.size),
-      mapIceToLabel(order.ice),
-      mapSugarToLabel(order.sugar),
-      order.ingredients ? `(${order.ingredients})` : '',
-    ]
-      .filter(Boolean)
-      .join(', ')}`,
-  },
-  accessory: !isClosed
-    ? {
-        type: 'overflow',
-        action_id: messageID,
-        options: [
-          {
-            text: {
-              type: 'plain_text',
-              text: 'Edit order',
-              emoji: true,
-            },
-            value: 'edit-order',
-          },
-          {
-            text: {
-              type: 'plain_text',
-              text: 'Remove order',
-              emoji: true,
-            },
-            value: 'remove-order',
-          },
-        ],
-      }
-    : undefined,
-});
+const Order = ({ order, messageID, isClosed }) => html`
+  <section
+    block_id=${`${ORDER_OVERFLOW_BLOCK_ID}_${order.orderID}`}
+    text=${html`
+      <${Mrkdwn}>
+        <${User}>${order.userID}<//>:${' '}
+        <b>${order.orderName}</b>${'  '}(<b>$${order.price}</b>)
+        <br />
+        ${[
+          mapSizeToLabel(order.size),
+          mapIceToLabel(order.ice),
+          mapSugarToLabel(order.sugar),
+          order.ingredients ? `(${order.ingredients})` : '',
+        ]
+          .filter(Boolean)
+          .join(', ')}
+      <//>
+    `}
+    accessory=${!isClosed &&
+      html`
+        <${Overflow} action_id=${messageID}>
+          <${Option} value="edit-order" emoji>
+            Edit order
+          <//>
+          <${Option} value="remove-order" emoji>
+            Remove order
+          <//>
+        <//>
+      `}
+  />
+`;
 
 module.exports = Order;

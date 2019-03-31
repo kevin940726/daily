@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
-const slackRouter = require('./slackRouter');
+const slackRouter = require('./slack-router');
 const { PORT } = require('./constants');
 
 const app = new Koa();
