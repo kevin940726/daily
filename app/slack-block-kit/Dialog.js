@@ -1,7 +1,7 @@
 function Dialog({ children, ...props }) {
   return {
     ...props,
-    elements: children,
+    elements: children.filter(Boolean),
   };
 }
 
