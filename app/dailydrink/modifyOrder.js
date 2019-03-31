@@ -16,9 +16,15 @@ const handleRemoveOrder = async ctx => {
 
   ctx.ok();
 
-  removeOrder(orderID, messageID, userID).then(() =>
-    updateMessage(messageID, responseURL)
-  );
+  getDrinkOrderData(messageID).then(messageData => {
+    if (messageData.orders[orderID].userID !== userID) {
+      return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
+    }
+
+    return removeOrder(orderID, messageID).then(() =>
+      updateMessage(messageID, responseURL)
+    );
+  });
 };
 
 const handleEditOrder = async ctx => {
@@ -32,30 +38,30 @@ const handleEditOrder = async ctx => {
   } = body;
   const orderID = blockID.replace(ORDER_OVERFLOW_BLOCK_ID, '').slice(1);
 
-  const messageData = await getDrinkOrderData(messageID);
-
-  const orderData = messageData.orders[orderID];
-
-  if (orderData.userID !== userID) {
-    return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
-  }
-
-  const state = {
-    responseURL,
-    messageID,
-    orderID,
-  };
-
   ctx.ok();
 
-  openDialog(
-    triggerID,
-    OrderDialog({
-      state,
-      fields: orderData,
-      isEdit: true,
-    })
-  );
+  getDrinkOrderData(messageID).then(messageData => {
+    const orderData = messageData.orders[orderID];
+
+    if (orderData.userID !== userID) {
+      return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
+    }
+
+    const state = {
+      responseURL,
+      messageID,
+      orderID,
+    };
+
+    openDialog(
+      triggerID,
+      OrderDialog({
+        state,
+        fields: orderData,
+        isEdit: true,
+      })
+    );
+  });
 };
 
 module.exports = async ctx => {

@@ -352,7 +352,7 @@ exports.getDrinkOrderData = async messageID => {
   return messageData;
 };
 
-exports.removeOrder = async (orderID, messageID, userID) => {
+exports.removeOrder = async (orderID, messageID) => {
   const messageRef = dailydrinkCollection.doc(messageID);
   const messageData = await exports.getDrinkOrderData(messageID);
   const orderData = messageData.orders[orderID];
@@ -361,23 +361,13 @@ exports.removeOrder = async (orderID, messageID, userID) => {
     return;
   }
 
-  if (orderData.userID !== userID) {
-    return Promise.reject('permission denied');
-  }
-
   return messageRef.update({
     [`orders.${orderID}`]: FieldValue.delete(),
   });
 };
 
-exports.setDrinkIsClosed = async (messageID, userID, isClosed) => {
+exports.setDrinkIsClosed = async (messageID, isClosed) => {
   const messageRef = dailydrinkCollection.doc(messageID);
-
-  const messageData = await exports.getDrinkOrderData(messageID);
-
-  if (userID !== messageData.userID) {
-    return Promise.reject('permission denied');
-  }
 
   return messageRef.update({
     isClosed,

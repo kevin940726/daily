@@ -15,9 +15,15 @@ const handleSetDrinkIsClosed = async (ctx, isClosed) => {
 
   ctx.ok();
 
-  setDrinkIsClosed(messageID, userID, isClosed).then(() =>
-    updateMessage(messageID, responseURL)
-  );
+  getDrinkOrderData(messageID).then(messageData => {
+    if (messageData.userID !== userID) {
+      return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
+    }
+
+    return setDrinkIsClosed(messageID, isClosed).then(() =>
+      updateMessage(messageID, responseURL)
+    );
+  });
 };
 
 const handleEditDrink = async ctx => {
@@ -32,21 +38,21 @@ const handleEditDrink = async ctx => {
 
   ctx.ok();
 
-  const messageData = await getDrinkOrderData(messageID);
+  getDrinkOrderData(messageID).then(messageData => {
+    if (messageData.userID !== userID) {
+      return ctx.sendError(responseURL, 'Permission denied: Owners only.');
+    }
 
-  if (messageData.userID !== userID) {
-    return ctx.sendError(responseURL, 'Permission denied: Owners only.');
-  }
+    const state = {
+      storeID: messageData.store.storeName,
+      messageID,
+    };
 
-  const state = {
-    storeID: messageData.store.storeName,
-    messageID,
-  };
-
-  openDialog(
-    triggerID,
-    DrinkDialog({ isEdit: true, fields: messageData, state })
-  );
+    openDialog(
+      triggerID,
+      DrinkDialog({ isEdit: true, fields: messageData, state })
+    );
+  });
 };
 
 module.exports = async ctx => {
