@@ -36,7 +36,7 @@ L, Ice-free, Sugar-free, (ingredients)",
 
 exports[`it renders <Order /> with closed 1`] = `
 Object {
-  "accessory": false,
+  "accessory": undefined,
   "block_id": "order-overflow-block-id_orderID",
   "text": Object {
     "text": "<@userID>: *orderName*  (*$50*)

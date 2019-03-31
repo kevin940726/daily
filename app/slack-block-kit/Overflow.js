@@ -1,8 +1,10 @@
+const Fragment = require('./Fragment');
+
 function Overflow({ children, ...props }) {
   return {
     type: 'overflow',
     ...props,
-    options: children,
+    options: Fragment({ children }),
   };
 }
 
@@ -24,7 +26,7 @@ function OptionGroups({ label, children, ...props }) {
       text: label.join(''),
       ...props,
     },
-    options: children,
+    options: Fragment({ children }),
   };
 }
 

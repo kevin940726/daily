@@ -20,7 +20,7 @@ exports.respondMessage = (responseURL, message) =>
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(message),
-  }).then(res => res.json());
+  });
 
 exports.openDialog = (triggerID, dialog) =>
   slackAPI('dialog.open', {

@@ -8,21 +8,25 @@ exports.create = async ctx => {
     trigger_id: triggerID,
     user_id: userID,
     user_name: userName,
+    response_url: responseURL,
     text,
   } = ctx.request.body;
 
   logger.log('/slash/dailydrink', {
     userID,
     userName,
-    triggerID,
     text,
   });
 
   ctx.ok();
 
+  const state = {
+    responseURL,
+  };
+
   if (text.trim() === 'submit') {
     openDialog(triggerID, StoreDialog({}));
   } else {
-    openDialog(triggerID, DrinkDialog({}));
+    openDialog(triggerID, DrinkDialog({ state }));
   }
 };

@@ -4,25 +4,24 @@ const OrderDialog = require('./components/OrderDialog');
 const updateMessage = require('./updateMessage');
 const { ORDER_DRINK_BLOCK_ID } = require('./constants');
 const { nanoID } = require('../utils');
+const logger = require('../logger');
 
 exports.handleOrderDrink = async ctx => {
   const { body } = ctx.state;
 
-  const {
-    trigger_id: triggerID,
-    response_url: responseURL,
-    container,
-    actions,
-  } = body;
+  const { trigger_id: triggerID, response_url: responseURL, actions } = body;
 
   const blockID = actions[0].block_id;
   const messageID = blockID.replace(ORDER_DRINK_BLOCK_ID, '').slice(1);
 
   const state = {
-    originalMessage: container,
     responseURL,
     messageID,
   };
+
+  logger.log('/dailydrink/order-dialog', {
+    messageID,
+  });
 
   ctx.ok();
 
@@ -35,6 +34,14 @@ exports.appendOrder = async ctx => {
   const { submission, state, user } = body;
 
   const { responseURL, messageID, orderID = nanoID() } = JSON.parse(state);
+
+  logger.log('/dailydrink/append-order', {
+    ...submission,
+    messageID,
+    orderID,
+    userID: user.id,
+    userName: user.name,
+  });
 
   ctx.ok();
 

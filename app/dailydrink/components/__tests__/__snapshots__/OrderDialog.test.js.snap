@@ -14,24 +14,22 @@ Object {
       "label": "Size",
       "name": "size",
       "options": Array [
-        Array [
-          Object {
-            "label": "S",
-            "value": "s",
-          },
-          Object {
-            "label": "M",
-            "value": "m",
-          },
-          Object {
-            "label": "L",
-            "value": "l",
-          },
-          Object {
-            "label": "XL",
-            "value": "xl",
-          },
-        ],
+        Object {
+          "label": "S",
+          "value": "s",
+        },
+        Object {
+          "label": "M",
+          "value": "m",
+        },
+        Object {
+          "label": "L",
+          "value": "l",
+        },
+        Object {
+          "label": "XL",
+          "value": "xl",
+        },
       ],
       "type": "select",
       "value": "l",
@@ -40,24 +38,22 @@ Object {
       "label": "Ice",
       "name": "ice",
       "options": Array [
-        Array [
-          Object {
-            "label": "Regular Ice",
-            "value": "regular",
-          },
-          Object {
-            "label": "Easy Ice",
-            "value": "easy",
-          },
-          Object {
-            "label": "Ice-free",
-            "value": "free",
-          },
-          Object {
-            "label": "Hot",
-            "value": "hot",
-          },
-        ],
+        Object {
+          "label": "Regular Ice",
+          "value": "regular",
+        },
+        Object {
+          "label": "Easy Ice",
+          "value": "easy",
+        },
+        Object {
+          "label": "Ice-free",
+          "value": "free",
+        },
+        Object {
+          "label": "Hot",
+          "value": "hot",
+        },
       ],
       "type": "select",
       "value": "free",
@@ -66,28 +62,26 @@ Object {
       "label": "Sugar",
       "name": "sugar",
       "options": Array [
-        Array [
-          Object {
-            "label": "Regular Sugar",
-            "value": "regular",
-          },
-          Object {
-            "label": "Less Sugar",
-            "value": "less",
-          },
-          Object {
-            "label": "Half Sugar",
-            "value": "half",
-          },
-          Object {
-            "label": "Quarter Sugar",
-            "value": "quarter",
-          },
-          Object {
-            "label": "Sugar-free",
-            "value": "free",
-          },
-        ],
+        Object {
+          "label": "Regular Sugar",
+          "value": "regular",
+        },
+        Object {
+          "label": "Less Sugar",
+          "value": "less",
+        },
+        Object {
+          "label": "Half Sugar",
+          "value": "half",
+        },
+        Object {
+          "label": "Quarter Sugar",
+          "value": "quarter",
+        },
+        Object {
+          "label": "Sugar-free",
+          "value": "free",
+        },
       ],
       "type": "select",
       "value": "free",
@@ -129,24 +123,22 @@ Object {
       "label": "Size",
       "name": "size",
       "options": Array [
-        Array [
-          Object {
-            "label": "S",
-            "value": "s",
-          },
-          Object {
-            "label": "M",
-            "value": "m",
-          },
-          Object {
-            "label": "L",
-            "value": "l",
-          },
-          Object {
-            "label": "XL",
-            "value": "xl",
-          },
-        ],
+        Object {
+          "label": "S",
+          "value": "s",
+        },
+        Object {
+          "label": "M",
+          "value": "m",
+        },
+        Object {
+          "label": "L",
+          "value": "l",
+        },
+        Object {
+          "label": "XL",
+          "value": "xl",
+        },
       ],
       "type": "select",
       "value": "xl",
@@ -155,24 +147,22 @@ Object {
       "label": "Ice",
       "name": "ice",
       "options": Array [
-        Array [
-          Object {
-            "label": "Regular Ice",
-            "value": "regular",
-          },
-          Object {
-            "label": "Easy Ice",
-            "value": "easy",
-          },
-          Object {
-            "label": "Ice-free",
-            "value": "free",
-          },
-          Object {
-            "label": "Hot",
-            "value": "hot",
-          },
-        ],
+        Object {
+          "label": "Regular Ice",
+          "value": "regular",
+        },
+        Object {
+          "label": "Easy Ice",
+          "value": "easy",
+        },
+        Object {
+          "label": "Ice-free",
+          "value": "free",
+        },
+        Object {
+          "label": "Hot",
+          "value": "hot",
+        },
       ],
       "type": "select",
       "value": "regular",
@@ -181,28 +171,26 @@ Object {
       "label": "Sugar",
       "name": "sugar",
       "options": Array [
-        Array [
-          Object {
-            "label": "Regular Sugar",
-            "value": "regular",
-          },
-          Object {
-            "label": "Less Sugar",
-            "value": "less",
-          },
-          Object {
-            "label": "Half Sugar",
-            "value": "half",
-          },
-          Object {
-            "label": "Quarter Sugar",
-            "value": "quarter",
-          },
-          Object {
-            "label": "Sugar-free",
-            "value": "free",
-          },
-        ],
+        Object {
+          "label": "Regular Sugar",
+          "value": "regular",
+        },
+        Object {
+          "label": "Less Sugar",
+          "value": "less",
+        },
+        Object {
+          "label": "Half Sugar",
+          "value": "half",
+        },
+        Object {
+          "label": "Quarter Sugar",
+          "value": "quarter",
+        },
+        Object {
+          "label": "Sugar-free",
+          "value": "free",
+        },
       ],
       "type": "select",
       "value": "half",

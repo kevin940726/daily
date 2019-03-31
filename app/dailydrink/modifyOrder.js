@@ -3,16 +3,24 @@ const OrderDialog = require('./components/OrderDialog');
 const { openDialog } = require('../slack');
 const updateMessage = require('./updateMessage');
 const { ORDER_OVERFLOW_BLOCK_ID } = require('./constants');
+const logger = require('../logger');
 
 const handleRemoveOrder = async ctx => {
   const { body } = ctx.state;
 
   const {
     actions: [{ action_id: messageID, block_id: blockID }],
-    user: { id: userID },
+    user: { id: userID, name: userName },
     response_url: responseURL,
   } = body;
   const orderID = blockID.replace(ORDER_OVERFLOW_BLOCK_ID, '').slice(1);
+
+  logger.log('/dailydrink/remove-order', {
+    messageID,
+    orderID,
+    userID,
+    userName,
+  });
 
   ctx.ok();
 

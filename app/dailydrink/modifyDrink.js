@@ -3,15 +3,23 @@ const updateMessage = require('./updateMessage');
 const DrinkDialog = require('./components/DrinkDialog');
 const { openDialog } = require('../slack');
 const { getDrinkOrderData } = require('../store');
+const logger = require('../logger');
 
 const handleSetDrinkIsClosed = async (ctx, isClosed) => {
   const { body } = ctx.state;
 
   const {
     actions: [{ action_id: messageID }],
-    user: { id: userID },
+    user: { id: userID, name: userName },
     response_url: responseURL,
   } = body;
+
+  logger.log('/dailydrink/set-is-closed', {
+    messageID,
+    userID,
+    isClosed,
+    userName,
+  });
 
   ctx.ok();
 
@@ -20,7 +28,7 @@ const handleSetDrinkIsClosed = async (ctx, isClosed) => {
       return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
     }
 
-    return setDrinkIsClosed(messageID, isClosed).then(() =>
+    setDrinkIsClosed(messageID, isClosed).then(() =>
       updateMessage(messageID, responseURL)
     );
   });
@@ -31,10 +39,16 @@ const handleEditDrink = async ctx => {
 
   const {
     actions: [{ action_id: messageID }],
-    user: { id: userID },
+    user: { id: userID, name: userName },
     trigger_id: triggerID,
     response_url: responseURL,
   } = body;
+
+  logger.log('/dailydrink/edit-drink', {
+    messageID,
+    userID,
+    userName,
+  });
 
   ctx.ok();
 
@@ -45,6 +59,7 @@ const handleEditDrink = async ctx => {
 
     const state = {
       storeID: messageData.store.storeName,
+      responseURL,
       messageID,
     };
 
@@ -56,7 +71,7 @@ const handleEditDrink = async ctx => {
 };
 
 module.exports = async ctx => {
-  const body = JSON.parse(ctx.request.body.payload);
+  const { body } = ctx.state;
 
   const {
     actions: [

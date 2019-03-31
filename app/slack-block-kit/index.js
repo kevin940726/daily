@@ -1,11 +1,12 @@
 const htm = require('htm');
 const components = require('./components');
+const Fragment = require('./Fragment');
 
 function createBlock(type, props, ...children) {
   if (typeof type === 'function') {
     return type({ ...props, children });
   } else if (type === '') {
-    return [].concat(...children);
+    return Fragment({ children });
   } else if (type === 'br') {
     return `\n`;
   } else if (type === 'b') {

@@ -40,6 +40,24 @@ test('it renders <Drink />', () => {
   expect(block).toMatchSnapshot();
 });
 
+test('it renders <Drink /> without orders', () => {
+  const block = html`
+    <${Drink}
+      title="title"
+      userID="userID"
+      store=${{
+        storeName: 'storeName',
+        imageURL: 'https://via.placeholder.com/150',
+      }}
+      orders=${[]}
+      messageID="messageID"
+      isClosed=${false}
+    />
+  `;
+
+  expect(block).toMatchSnapshot();
+});
+
 test('it renders <Drink /> with closed', () => {
   const block = html`
     <${Drink}

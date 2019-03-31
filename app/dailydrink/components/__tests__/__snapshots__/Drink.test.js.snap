@@ -193,7 +193,7 @@ Array [
     "type": "divider",
   },
   Object {
-    "accessory": false,
+    "accessory": undefined,
     "block_id": "order-overflow-block-id_orderID",
     "text": Object {
       "text": "<@userID>: *orderName*  (*$50*)
@@ -203,7 +203,7 @@ L, Ice-free, Sugar-free, (ingredients)",
     "type": "section",
   },
   Object {
-    "accessory": false,
+    "accessory": undefined,
     "block_id": "order-overflow-block-id_orderID2",
     "text": Object {
       "text": "<@userID>: *orderName*  (*$50*)
@@ -230,6 +230,70 @@ $100",
     ],
     "type": "section",
   },
-  false,
+]
+`;
+
+exports[`it renders <Drink /> without orders 1`] = `
+Array [
+  Object {
+    "alt_text": "storeName",
+    "image_url": "https://via.placeholder.com/150",
+    "type": "image",
+  },
+  Object {
+    "accessory": Object {
+      "action_id": "messageID",
+      "options": Array [
+        Object {
+          "text": Object {
+            "text": "Close order",
+            "type": "plain_text",
+          },
+          "value": "close-order",
+        },
+        Object {
+          "text": Object {
+            "text": "Edit Order",
+            "type": "plain_text",
+          },
+          "value": "edit-order",
+        },
+      ],
+      "type": "overflow",
+    },
+    "block_id": "dailydrink-overflow-block-id_messageID",
+    "text": Object {
+      "text": "*title*",
+      "type": "mrkdwn",
+    },
+    "type": "section",
+  },
+  Object {
+    "elements": Array [
+      Object {
+        "text": "storeName   _by <@userID>_",
+        "type": "mrkdwn",
+      },
+    ],
+    "type": "context",
+  },
+  Object {
+    "type": "divider",
+  },
+  Object {
+    "block_id": "order-drink-block_messageID",
+    "elements": Array [
+      Object {
+        "action_id": "order-drink",
+        "text": Object {
+          "emoji": undefined,
+          "text": "Order drink",
+          "type": "plain_text",
+        },
+        "type": "button",
+      },
+    ],
+    "type": "actions",
+  },
 ]
 `;

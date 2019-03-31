@@ -26,17 +26,18 @@ const Order = ({ order, messageID, isClosed }) => html`
           .join(', ')}
       <//>
     `}
-    accessory=${!isClosed &&
-      html`
-        <${Overflow} action_id=${messageID}>
-          <${Option} value="edit-order" emoji>
-            Edit order
+    accessory=${!isClosed
+      ? html`
+          <${Overflow} action_id=${messageID}>
+            <${Option} value="edit-order" emoji>
+              Edit order
+            <//>
+            <${Option} value="remove-order" emoji>
+              Remove order
+            <//>
           <//>
-          <${Option} value="remove-order" emoji>
-            Remove order
-          <//>
-        <//>
-      `}
+        `
+      : undefined}
   />
 `;
 

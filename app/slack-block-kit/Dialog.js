@@ -1,7 +1,9 @@
+const Fragment = require('./Fragment');
+
 function Dialog({ children, ...props }) {
   return {
     ...props,
-    elements: children.filter(Boolean),
+    elements: Fragment({ children }),
   };
 }
 
@@ -14,7 +16,7 @@ function DialogSelect({ children, ...props }) {
   if (children.length) {
     block[
       children.every(child => !!child.label) ? 'option_groups' : 'options'
-    ] = children;
+    ] = Fragment({ children });
   }
 
   return block;
@@ -30,7 +32,7 @@ function DialogOption({ children, ...props }) {
 function DialogOptionGroups({ children, ...props }) {
   return {
     ...props,
-    options: children,
+    options: Fragment({ children }),
   };
 }
 

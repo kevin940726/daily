@@ -128,16 +128,18 @@ exports.submitDialog = async ctx => {
     attachments: buildAttachments(lunches).concat(
       buildCloseAction(messageID, false)
     ),
-  }).then(response => {
-    if (response && response.ok) {
-      createLunch(messageID, {
-        lunch: lunches,
-        title,
-        userID,
-        userName,
-        isDailylunch,
-        channelID,
-      });
-    }
-  });
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (response && response.ok) {
+        createLunch(messageID, {
+          lunch: lunches,
+          title,
+          userID,
+          userName,
+          isDailylunch,
+          channelID,
+        });
+      }
+    });
 };
