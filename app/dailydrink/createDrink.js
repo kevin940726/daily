@@ -16,14 +16,10 @@ exports.handlePostToChannel = async ctx => {
   const store = await getStoreData(storeID);
 
   if (!store) {
-    ctx.status = 404;
-    ctx.body = null;
-
-    return;
+    return ctx.sendError(responseURL, 'Store not found');
   }
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   const payload = {
     title,

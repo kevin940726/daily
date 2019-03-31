@@ -1,6 +1,7 @@
 const Router = require('koa-router');
-const verify = require('./verify');
+const verifyMiddleware = require('./verifyMiddleware');
 const parsePayloadMiddleware = require('./parsePayloadMiddleware');
+const respondMiddleware = require('./respondMiddleware');
 const interactive = require('./interactive');
 const options = require('./options');
 const { create: slashDailylunch } = require('../dailylunch/create');
@@ -10,8 +11,9 @@ const slackRouter = new Router({
   prefix: '/slack',
 });
 
-slackRouter.use(verify());
-slackRouter.use(parsePayloadMiddleware);
+slackRouter.use(verifyMiddleware());
+slackRouter.use(parsePayloadMiddleware());
+slackRouter.use(respondMiddleware());
 slackRouter.post('/interactive', interactive);
 slackRouter.post('/options', options);
 slackRouter.post('/slash/dailylunch', slashDailylunch);

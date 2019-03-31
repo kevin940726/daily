@@ -24,8 +24,7 @@ exports.handleOrderDrink = async ctx => {
     messageID,
   };
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   openDialog(triggerID, OrderDialog({ state }));
 };
@@ -37,8 +36,7 @@ exports.appendOrder = async ctx => {
 
   const { responseURL, messageID, orderID = nanoID() } = JSON.parse(state);
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   const { price, ...orderData } = submission;
 

@@ -14,8 +14,7 @@ const handleRemoveOrder = async ctx => {
   } = body;
   const orderID = blockID.replace(ORDER_OVERFLOW_BLOCK_ID, '').slice(1);
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   removeOrder(orderID, messageID, userID).then(() =>
     updateMessage(messageID, responseURL)
@@ -38,10 +37,7 @@ const handleEditOrder = async ctx => {
   const orderData = messageData.orders[orderID];
 
   if (orderData.userID !== userID) {
-    ctx.status = 200;
-    ctx.body = null;
-
-    return;
+    return ctx.sendWarning(responseURL, 'Permission denied: Owners only.');
   }
 
   const state = {
@@ -50,8 +46,7 @@ const handleEditOrder = async ctx => {
     orderID,
   };
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   openDialog(
     triggerID,
@@ -74,8 +69,7 @@ module.exports = async ctx => {
     case 'edit-order':
       return handleEditOrder(ctx);
     default: {
-      ctx.status = 200;
-      ctx.body = null;
+      ctx.ok();
     }
   }
 };

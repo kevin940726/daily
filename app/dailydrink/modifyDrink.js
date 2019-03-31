@@ -1,7 +1,7 @@
 const { setDrinkIsClosed } = require('../store');
 const updateMessage = require('./updateMessage');
 const DrinkDialog = require('./components/DrinkDialog');
-const { openDialog, throwError } = require('../slack');
+const { openDialog } = require('../slack');
 const { getDrinkOrderData } = require('../store');
 
 const handleSetDrinkIsClosed = async (ctx, isClosed) => {
@@ -13,8 +13,7 @@ const handleSetDrinkIsClosed = async (ctx, isClosed) => {
     response_url: responseURL,
   } = body;
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   setDrinkIsClosed(messageID, userID, isClosed).then(() =>
     updateMessage(messageID, responseURL)
@@ -28,15 +27,15 @@ const handleEditDrink = async ctx => {
     actions: [{ action_id: messageID }],
     user: { id: userID },
     trigger_id: triggerID,
+    response_url: responseURL,
   } = body;
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   const messageData = await getDrinkOrderData(messageID);
 
   if (messageData.userID !== userID) {
-    throwError('Permission denied: Owners only.');
+    return ctx.sendError(responseURL, 'Permission denied: Owners only.');
   }
 
   const state = {
@@ -69,8 +68,7 @@ module.exports = async ctx => {
     case 'edit-order':
       return handleEditDrink(ctx);
     default: {
-      ctx.status = 200;
-      ctx.body = null;
+      ctx.ok();
     }
   }
 };

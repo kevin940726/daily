@@ -18,13 +18,11 @@ exports.create = async ctx => {
     text,
   });
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   if (text.trim() === 'submit') {
     openDialog(triggerID, StoreDialog({}));
-    return;
+  } else {
+    openDialog(triggerID, DrinkDialog({}));
   }
-
-  openDialog(triggerID, DrinkDialog({}));
 };

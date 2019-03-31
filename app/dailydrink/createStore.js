@@ -7,8 +7,7 @@ exports.handleSubmitNewStore = async ctx => {
 
   const storeID = submission.storeName;
 
-  ctx.status = 200;
-  ctx.body = null;
+  ctx.ok();
 
   submitNewStore(storeID, {
     ...submission,
