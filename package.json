@@ -1,7 +1,7 @@
 {
-  "name": "dailylunch",
-  "version": "1.0.0",
-  "description": "dailylunch for 17media",
+  "name": "daily",
+  "version": "2.0.0",
+  "description": "slack bot for dailylunch and dailydrink",
   "main": "app/index.js",
   "repository": "https://github.com/kevin940726/dailylunch",
   "author": "Kai Hao",
