@@ -6,7 +6,7 @@ const {
   setMessageClose,
   updateMessage,
 } = require('../store');
-const { respondMessage } = require('../slack');
+const { throwError, throwWarning } = require('../slack');
 const {
   CLOSE_ACTION,
   CLOSE_USER_WHITE_LIST,
@@ -27,12 +27,7 @@ const handleCloseAction = async (
     ctx.status = 200;
     ctx.body = '';
 
-    respondMessage(responseURL, {
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: '❎  Authorized staffs only!',
-      color: 'danger',
-    });
+    throwError(responseURL, 'Authorized staffs only!');
 
     return;
   }
@@ -96,12 +91,7 @@ const button = async ctx => {
     ctx.status = 200;
     ctx.body = '';
 
-    respondMessage(responseURL, {
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: '⚠️ The order is closed!',
-      color: 'warning',
-    });
+    throwWarning(responseURL, 'The order is closed!');
 
     return;
   }
@@ -119,12 +109,7 @@ const button = async ctx => {
   } catch (err) {
     // predefined error
     if (typeof err === 'string') {
-      return respondMessage(responseURL, {
-        response_type: 'ephemeral',
-        replace_original: false,
-        text: err,
-        color: 'warning',
-      });
+      return throwWarning(responseURL, err);
     }
 
     return;

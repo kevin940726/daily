@@ -3,7 +3,7 @@ const { SIGNING_SECRET } = require('../constants');
 
 const VERSION = 'v0';
 
-const verify = () => async (ctx, next) => {
+const verifyMiddleware = () => async (ctx, next) => {
   const request = ctx.request;
 
   const timestamp = request.header['x-slack-request-timestamp'];
@@ -28,4 +28,4 @@ const verify = () => async (ctx, next) => {
   return next();
 };
 
-module.exports = verify;
+module.exports = verifyMiddleware;

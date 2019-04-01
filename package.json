@@ -1,7 +1,7 @@
 {
-  "name": "dailylunch",
-  "version": "1.0.0",
-  "description": "dailylunch for 17media",
+  "name": "daily",
+  "version": "2.0.0",
+  "description": "slack bot for dailylunch and dailydrink",
   "main": "app/index.js",
   "repository": "https://github.com/kevin940726/dailylunch",
   "author": "Kai Hao",
@@ -10,6 +10,7 @@
     "chalk": "^2.3.0",
     "dotenv": "^6.0.0",
     "firebase-admin": "5.12.1",
+    "htm": "^2.1.1",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.3.0",
@@ -27,10 +28,14 @@
     "node": "^10.7.0 || >=8"
   },
   "devDependencies": {
-    "babel-eslint": "^7.2.1",
-    "eslint": "^5.1.0",
-    "eslint-config-prettier": "^2.9.0",
-    "jest-cli": "^21.2.1",
-    "prettier": "1.13.7"
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.1.0",
+    "jest-cli": "^24.5.0",
+    "prettier": "1.16.4"
+  },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ]
   }
 }

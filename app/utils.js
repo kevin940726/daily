@@ -1,3 +1,5 @@
+const generate = require('nanoid/generate');
+const url = require('nanoid/url');
 const {
   MAIN_COLOR,
   COUNT_EMOJI,
@@ -84,3 +86,7 @@ exports.getDayKey = timestamp => {
 };
 
 exports.boldTitle = title => `*${title}*`;
+
+const alphabets = url.replace('~', '-');
+
+exports.nanoID = () => generate(alphabets, 16);

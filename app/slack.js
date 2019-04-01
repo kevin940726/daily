@@ -27,3 +27,26 @@ exports.openDialog = (triggerID, dialog) =>
     trigger_id: triggerID,
     dialog,
   });
+
+exports.deleteMessage = (channelID, messageTS, asUser) =>
+  slackAPI('chat.delete', {
+    channel: channelID,
+    ts: messageTS,
+    as_user: asUser,
+  });
+
+exports.throwError = (responseURL, error) =>
+  exports.respondMessage(responseURL, {
+    response_type: 'ephemeral',
+    replace_original: false,
+    text: `🚫  ${error}`,
+    color: 'danger',
+  });
+
+exports.throwWarning = (responseURL, warning) =>
+  exports.respondMessage(responseURL, {
+    response_type: 'ephemeral',
+    replace_original: false,
+    text: `⚠️ ${warning}`,
+    color: 'warning',
+  });

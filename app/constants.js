@@ -15,8 +15,8 @@ exports.DAILYLUNCH_MAX_PRICE = 150;
 /**
  * errors
  */
-exports.ERROR_EXCEED_PRICE = '🚫 You have exceeded your daily lunch quota!';
-exports.ERROR_EXCEED_LIMIT = '🚫 The limit is reached!';
+exports.ERROR_EXCEED_PRICE = 'You have exceeded your daily lunch quota!';
+exports.ERROR_EXCEED_LIMIT = 'The limit is reached!';
 
 // slack env
 exports.SLACK_ENV = process.env.SLACK_ENV || 'development';

@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it renders <StoreDialog /> 1`] = `
+Object {
+  "callback_id": "create-new-store-callback-id",
+  "elements": Array [
+    Object {
+      "label": "Store name",
+      "name": "storeName",
+      "type": "text",
+    },
+    Object {
+      "label": "Menu image URL",
+      "name": "imageURL",
+      "subtype": "url",
+      "type": "text",
+    },
+  ],
+  "notify_on_cancel": false,
+  "submit_label": "Submit",
+  "title": "Submit a new store",
+}
+`;
