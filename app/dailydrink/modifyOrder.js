@@ -40,11 +40,18 @@ const handleEditOrder = async ctx => {
 
   const {
     actions: [{ action_id: messageID, block_id: blockID }],
-    user: { id: userID },
+    user: { id: userID, name: userName },
     trigger_id: triggerID,
     response_url: responseURL,
   } = body;
   const orderID = blockID.replace(ORDER_OVERFLOW_BLOCK_ID, '').slice(1);
+
+  logger.log('/dailydrink/edit-order', {
+    messageID,
+    orderID,
+    userID,
+    userName,
+  });
 
   ctx.ok();
 
