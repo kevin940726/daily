@@ -11,10 +11,10 @@
 
 A lunch ordering service bot.
 
-![dailylunch](assets/dailylunch-screenshot.png)
+<img src="assets/dailylunch-screenshot.png" height="350" alt="dailylunch">
 
 ### dailydrink
 
 A drink ordering service bot.
 
-![dailydrink](assets/dailydrink-screenshot.png)
+<img src="assets/dailydrink-screenshot.png" height="500" alt="dailydrink">
